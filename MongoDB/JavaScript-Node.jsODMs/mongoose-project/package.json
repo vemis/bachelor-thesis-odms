@@ -1,0 +1,9 @@
+{
+  "name": "mongoose-project",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "mongoose": "^9.0.0"
+  }
+}
