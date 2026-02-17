@@ -27,6 +27,7 @@ import static java.nio.file.Files.delete;
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
+
     public static void main(String[] args) {
         // 1. Create a MongoClient (connects to local MongoDB by default)
         MongoClient client = MongoClients.create("mongodb://localhost:27017");
