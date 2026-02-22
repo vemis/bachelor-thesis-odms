@@ -25,7 +25,7 @@ public class MorphiaBenchmarksR {
      */
     //@Benchmark
     public void A1(){
-        List<LineitemR> a1 = QueriesR.A1(datastore);
+        List<LineitemR> a1 = QueriesMorphiaR.A1(datastore);
     }
 
     /**
@@ -34,7 +34,7 @@ public class MorphiaBenchmarksR {
      */
     //@Benchmark
     public void A2(){
-        List<OrdersR> a2 = QueriesR.A2(datastore);
+        List<OrdersR> a2 = QueriesMorphiaR.A2(datastore);
     }
 
     /**
@@ -43,7 +43,7 @@ public class MorphiaBenchmarksR {
      */
     //@Benchmark
     public  void A3(){
-        List<Document> a3 = QueriesR.B1(datastore);
+        List<Document> a3 = QueriesMorphiaR.B1(datastore);
     }
 
     /**
@@ -52,7 +52,7 @@ public class MorphiaBenchmarksR {
      */
     //@Benchmark
     public void C2(){
-        List<Document> c2 = QueriesR.C2(datastore);
+        List<Document> c2 = QueriesMorphiaR.C2(datastore);
     }
 
     /**
@@ -61,7 +61,7 @@ public class MorphiaBenchmarksR {
      */
     //@Benchmark
     public  void D1(){
-        List<Document> d1 = QueriesR.D1(datastore);
+        List<Document> d1 = QueriesMorphiaR.D1(datastore);
     }
 
     @Setup(Level.Trial)

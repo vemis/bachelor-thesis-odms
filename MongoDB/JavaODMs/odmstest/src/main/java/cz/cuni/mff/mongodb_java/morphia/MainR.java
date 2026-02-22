@@ -2,13 +2,9 @@ package cz.cuni.mff.mongodb_java.morphia;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import cz.cuni.mff.mongodb_java.morphia.benchmarks.QueriesR;
-import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_relational.LineitemR;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
 import dev.morphia.mapping.MapperOptions;
-
-import java.util.List;
 
 public class MainR {
     public static void main(String[] args){
