@@ -1,4 +1,4 @@
-package cz.cuni.mff.mongodb_java.springdata.models.tpc_h_relational;
+package cz.cuni.mff.mongodb_java.springdata_r.model;
 
 
 import org.springframework.data.annotation.Id;

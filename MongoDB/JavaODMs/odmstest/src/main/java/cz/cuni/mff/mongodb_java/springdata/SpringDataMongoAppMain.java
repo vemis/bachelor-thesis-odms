@@ -9,6 +9,8 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 public class SpringDataMongoAppMain {
     public static void main(String[] args) {
         SpringApplication.run(SpringDataMongoAppMain.class, args);
+
+
     }
 }
 
