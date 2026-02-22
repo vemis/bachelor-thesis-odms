@@ -1,5 +1,7 @@
 package cz.cuni.mff.mongodb_java.springdata_r;
 
+import cz.cuni.mff.mongodb_java.springdata_r.benchmarks.QueriesSpringDataR;
+import cz.cuni.mff.mongodb_java.springdata_r.benchmarks.SpringDataBenchmarkRunnerR;
 import cz.cuni.mff.mongodb_java.springdata_r.model.RegionR;
 import cz.cuni.mff.mongodb_java.springdata_r.service.LogicServiceR;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,7 @@ public class LogicCommandRunnerR {
     @Bean
     CommandLineRunner run(LogicServiceR service) {
         return args -> {
-            /*
+/*
             // Insert Regions
             TPCHDatasetLoaderSpringDataR.loadRegions("..\\..\\..\\dataset\\TPC-H\\tpch-data\\region.tbl", mongoTemplate);
             System.out.println("RegionRs saved!");
@@ -55,8 +57,24 @@ public class LogicCommandRunnerR {
             TPCHDatasetLoaderSpringDataR.loadSuppliers("..\\..\\..\\dataset\\TPC-H\\tpch-data\\supplier.tbl", mongoTemplate);
             System.out.println("supplierRs saved!");
 */
+            //System.out.println("Executing Query A1");
+            //var a1 = QueriesSpringDataR.A1(mongoTemplate);
+            //System.out.println(a1.size());
 
-            
+            //System.out.println("Executing Query A2");
+            //var a2 = QueriesSpringDataR.A2(mongoTemplate);
+            //System.out.println(a2.size());
+
+            //System.out.println("Executing Query B1");
+            //var b1 = QueriesSpringDataR.B1(mongoTemplate);
+            //System.out.println(b1.size());
+
+            System.out.println("Executing Query C2");
+            var c2 = QueriesSpringDataR.C2(mongoTemplate);
+            System.out.println(c2.size());
+            System.out.println("Query Executed.");
+
+
         };
     }
 }
