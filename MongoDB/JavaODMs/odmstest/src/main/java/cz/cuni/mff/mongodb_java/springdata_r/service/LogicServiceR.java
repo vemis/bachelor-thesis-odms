@@ -40,4 +40,8 @@ public class LogicServiceR {
         return QueriesSpringDataR.C2(mongoTemplate);
     }
 
+    public List<Document> D1(){
+        return QueriesSpringDataR.D1(mongoTemplate);
+    }
+
 }

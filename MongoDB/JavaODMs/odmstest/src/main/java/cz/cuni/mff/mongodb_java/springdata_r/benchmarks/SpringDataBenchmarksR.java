@@ -64,13 +64,13 @@ public class SpringDataBenchmarksR {
     }
 
     /**
-     * Benchmark              Mode  Cnt   Score   Error  Units
-     * MorphiaBenchmarksR.D1  avgt    5  51,989 ± 8,473  ms/op
+     * Benchmark                 Mode  Cnt   Score   Error  Units
+     * SpringDataBenchmarksR.D1  avgt    5  46,793 ± 2,847  ms/op
      */
-    //@Benchmark
-    /*public  void D1(){
-        List<Document> d1 = QueriesSpringDataR.D1(datastore);
-    }*/
+    @Benchmark
+    public  void D1(){
+        List<Document> d1 = logicServiceR.D1();
+    }
 
     @Setup(Level.Trial)
     public void setup() {

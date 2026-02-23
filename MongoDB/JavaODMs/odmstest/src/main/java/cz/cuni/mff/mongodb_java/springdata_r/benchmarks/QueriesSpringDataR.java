@@ -11,8 +11,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.project;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
 public class QueriesSpringDataR {
     /**
@@ -68,8 +67,7 @@ public class QueriesSpringDataR {
      */
     public static List<Document> B1(MongoTemplate mongoTemplate) {
 
-        GroupOperation groupOperation = Aggregation
-                .group().and("_id",
+        GroupOperation groupOperation = group().and("_id",
                         DateOperators.dateOf("o_orderdate")
                         .toString("%Y-%m")
                 )
@@ -141,44 +139,43 @@ public class QueriesSpringDataR {
      * UNION
      * (SELECT s_nationkey FROM supplier);
      * ```
-     * @param datastore
      */
-    /*public static List<Document> D1(Datastore datastore) {
-        List<Document> result = datastore.aggregate(CustomerR.class)
-                // SELECT c_nationkey AS nationkey
-                .project(
-                        Projection.project()
-                                .include("nationkey", Expressions.field("c_nationkey"))
-                                .exclude("_id")
-                ) //size() 30_000
+    public static List<Document> D1(MongoTemplate mongoTemplate) {
+        // Stage 1: project from customerR
+        ProjectionOperation projectCustomer =
+                Aggregation.project()
+                        .and("c_nationkey").as("nationkey");
 
-                // UNION supplier
-                .unionWith(SupplierR.class,
-                        Projection.project()
-                                .include("nationkey", Expressions.field("s_nationkey"))
-                                .exclude("_id")
-                ) //size() 32_000
+        // Stage 2: unionWith supplierR
+        UnionWithOperation unionWithSupplier =
+                UnionWithOperation.unionWith("supplierR")
+                        .pipeline(
+                                project("s_nationkey")
+                                        .and("s_nationkey").as("nationkey")
+                                        .andExclude("_id")
+                        );
 
-                // Remove duplicates (SQL UNION behavior)
-                .group(
-                        Group.group(
-                                Group.id(
-                                        Expressions.field("nationkey")
-                                )
+        // Stage 3: remove duplicates via group
+        GroupOperation groupByNationKey =
+                group("nationkey");
 
-                        )
-                ) //25
+        // Stage 4: reshape output
+        ProjectionOperation finalProjection =
+                project()
+                        .and("_id").as("nationkey")
+                        .andExclude("_id");
 
-                // Final reshape
-                .project(
-                        Projection.project()
-                                .include("nationkey", Expressions.field("_id"))
-                                .exclude("_id")
-                )
+        Aggregation aggregation = newAggregation(
+                projectCustomer,
+                unionWithSupplier,
+                groupByNationKey,
+                finalProjection
+        );
 
-                .execute(Document.class)
-                .toList();
-
-                return result;
-    }*/
+        return mongoTemplate.aggregate(
+                aggregation,
+                CustomerR.class,
+                Document.class
+        ).getMappedResults();
+    }
 }

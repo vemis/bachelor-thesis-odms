@@ -69,11 +69,15 @@ public class LogicCommandRunnerR {
             //var b1 = QueriesSpringDataR.B1(mongoTemplate);
             //System.out.println(b1.size());
 
-            System.out.println("Executing Query C2");
-            var c2 = QueriesSpringDataR.C2(mongoTemplate);
-            System.out.println(c2.size());
-            System.out.println("Query Executed.");
+            //System.out.println("Executing Query C2");
+            //var c2 = QueriesSpringDataR.C2(mongoTemplate);
+            //System.out.println(c2.size());
+            //System.out.println("Query Executed.");
 
+            //System.out.println("Executing Query D1");
+            //var d1 = QueriesSpringDataR.D1(mongoTemplate);
+            //System.out.println(d1.size());
+            //System.out.println("Query Executed.");
 
         };
     }
