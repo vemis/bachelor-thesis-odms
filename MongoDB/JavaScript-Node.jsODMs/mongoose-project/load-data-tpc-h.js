@@ -181,6 +181,119 @@ async function loadLineitems(filePath){
     }
 }
 
+async function loadPartsupps(filePath){
+    try {
+        const rowsOfData = await readDataFromCustomSeparator(filePath)
+
+        const rowsOfSchemas = rowsOfData.map(([
+                                                  ps_partKey,
+                                                  ps_suppKey,
+                                                  ps_availqty,
+                                                  ps_supplycost,
+                                                  ps_comment
+                                              ]) => ({
+                _id: ps_partKey + "|" + ps_suppKey,
+                ps_partKey: Number(ps_suppKey),
+                ps_suppkey: Number(ps_suppKey),
+                ps_availqty: Number(ps_availqty),
+                ps_supplycost: Number(ps_supplycost),
+                ps_comment
+            })
+        );
+
+        const rowsOfSchemasBatches = partition(rowsOfSchemas, 100_000);
+
+        for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
+            await PartsuppR.insertMany( rowsOfSchemasBatches[i] );
+            console.log("Batch inserted!")
+        }
+
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function loadSuppliers(filePath){
+    try {
+        const rowsOfData = await readDataFromCustomSeparator(filePath)
+
+        const rowsOfSchemas = rowsOfData.map(([
+                                                  _id,
+                                                  s_name,
+                                                  s_address,
+
+                                                  s_nationkey,
+                                                  s_phone,
+                                                  s_acctbal,
+
+                                                  s_comment
+                                              ]) => ({
+                _id: Number(_id),
+                s_name,
+                s_address,
+
+                s_nationkey: Number(s_nationkey),
+                s_phone,
+                s_acctbal: Number(s_acctbal),
+
+                s_comment
+            })
+        );
+
+        const rowsOfSchemasBatches = partition(rowsOfSchemas, 100_000);
+
+        for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
+            await SupplierR.insertMany( rowsOfSchemasBatches[i] );
+            console.log("Batch inserted!")
+        }
+
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function loadParts(filePath){
+    try {
+        const rowsOfData = await readDataFromCustomSeparator(filePath)
+
+        const rowsOfSchemas = rowsOfData.map(([
+                                                  _id,
+                                                  p_name,
+                                                  p_mfgr,
+                                                  p_brand,
+                                                  p_type,
+                                                  p_size,
+                                                  p_container,
+                                                  p_retailprice,
+                                                  p_commen
+                                              ]) => ({
+                _id: Number(_id),
+                p_name,
+                p_mfgr,
+                p_brand,
+                p_type,
+                p_size: Number(p_size),
+                p_container,
+                p_retailprice: Number(p_retailprice),
+                p_commen
+            })
+        );
+
+        const rowsOfSchemasBatches = partition(rowsOfSchemas, 100_000);
+
+        for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
+            await PartR.insertMany( rowsOfSchemasBatches[i] );
+            console.log("Batch inserted!")
+        }
+
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 function partition(array, batchSize) {
     const result = [];
 
@@ -197,7 +310,10 @@ export {
     loadNations,
     loadCustomers,
     loadOrders,
-    loadLineitems
+    loadLineitems,
+    loadPartsupps,
+    loadSuppliers,
+    loadParts
 }
 
 

@@ -21,39 +21,55 @@ async function run() {
     await mongoose.connect("mongodb://localhost:27017/mongoose_database_r");
     
     console.log("Connected to MongoDB.");
+    /*
+    await loadDataTPCH.loadRegions("..\\..\\..\\dataset\\TPC-H\\tpch-data\\region.tbl")
+    console.log("Regions loaded")
+
+    await loadDataTPCH.loadNations("..\\..\\..\\dataset\\TPC-H\\tpch-data\\nation.tbl")
+    console.log("Nations loaded")
     
-    //await loadDataTPCH.loadRegions("..\\..\\..\\dataset\\TPC-H\\tpch-data\\region.tbl")
-    //console.log("Regions loaded")
+    await loadDataTPCH.loadCustomers("..\\..\\..\\dataset\\TPC-H\\tpch-data\\customer.tbl")
+    console.log("Customers loaded")
 
-    //await loadDataTPCH.loadNations("..\\..\\..\\dataset\\TPC-H\\tpch-data\\nation.tbl")
-    //console.log("Nations loaded")
-    
-    //await loadDataTPCH.loadCustomers("..\\..\\..\\dataset\\TPC-H\\tpch-data\\customer.tbl")
-    //console.log("Customers loaded")
+    await loadDataTPCH.loadOrders("..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl")
+    console.log("Orders loaded");
 
-    //await loadDataTPCH.loadOrders("..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl")
-    //console.log("Orders loaded");
+    console.log("Loading Lineitems")
+    await loadDataTPCH.loadLineitems("..\\..\\..\\dataset\\TPC-H\\tpch-data\\lineitem.tbl")
+    console.log("Lineitems loaded");
 
-    //console.log("Loading Lineitems")
-    //await loadDataTPCH.loadLineitems("..\\..\\..\\dataset\\TPC-H\\tpch-data\\lineitem.tbl")
-    //console.log("Lineitems loaded");
-/*
-    // Insert Joe Doe
-    const customer1 = await CustomerR.insertMany([
-        {
-            _id: 1,
-            c_name: 'Customer#000000001',
-            c_address: 'IVhzIApeRb ot,c,E',
-            c_nationkey: 15,
-            c_phone: '25-989-741-2988',
-            c_acctbal: 711.56,
-            c_mktsegment: 'BUILDING',
-            c_commen: 'to the even, regular platelets. regular, ironic epitaphs nag e'
-        }
+    console.log("Loading Partsupps")
+    await loadDataTPCH.loadPartsupps("..\\..\\..\\dataset\\TPC-H\\tpch-data\\partsupp.tbl")
+    console.log("Partsupps loaded");
 
-    ]);
-    console.log("customers saved")
+    console.log("Loading Suppliers")
+    await loadDataTPCH.loadSuppliers("..\\..\\..\\dataset\\TPC-H\\tpch-data\\supplier.tbl")
+    console.log("Suppliers loaded")
+
+    console.log("Loading Parts")
+    await loadDataTPCH.loadParts("..\\..\\..\\dataset\\TPC-H\\tpch-data\\part.tbl")
+    console.log("Parts loaded")
 */
+
+
+
+    /*
+        // Insert Joe Doe
+        const customer1 = await CustomerR.insertMany([
+            {
+                _id: 1,
+                c_name: 'Customer#000000001',
+                c_address: 'IVhzIApeRb ot,c,E',
+                c_nationkey: 15,
+                c_phone: '25-989-741-2988',
+                c_acctbal: 711.56,
+                c_mktsegment: 'BUILDING',
+                c_commen: 'to the even, regular platelets. regular, ironic epitaphs nag e'
+            }
+
+        ]);
+        console.log("customers saved")
+    */
 }
 
 run().catch((err) => console.error(err));
