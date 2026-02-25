@@ -13,8 +13,8 @@ namespace MongoDBEntities
     class Program
     {
 
-        // Main Method
-        public static async Task Main(String[] args)
+        // MainTesting Method
+        public static async Task Main2(String[] args)
         {
             // Connect to MongoDB
             Console.WriteLine("Connecting to the database:");
