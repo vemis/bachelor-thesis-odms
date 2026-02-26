@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MongoDB.Entities;
+using MongoDBEntities.Models.TPC_H;
+using System;
 using System.Collections.Generic;
 using System.Formats.Asn1;
 using System.IO.Pipelines;
@@ -9,7 +11,7 @@ namespace MongoDBEntities
 {
     public class TPCHDatasetLoader
     {
-        public static List<string[]> readDataFromCustomSeparator(string filePath)
+        public static List<string[]> ReadDataFromCustomSeparator(string filePath)
         {
             try
             {
@@ -35,5 +37,35 @@ namespace MongoDBEntities
 
             return null;
         }
-    }
+
+        public static async Task LoadDatasetAsync(string filePath)
+        {
+            List<string[]> dataset = ReadDataFromCustomSeparator(filePath);
+
+            dataset = dataset.Take(10).ToList();
+
+            List<LineitemR> entities = new List<LineitemR>();
+
+
+            for (int i = 0; i < dataset.Count; i++)
+            {
+                if (i % 10_000 == 0)
+                {
+                    Console.WriteLine("Processed " + i + " / " + dataset.Count);
+                }
+
+                entities.Add
+                    (
+                        new LineitemR(dataset[i])
+                    );
+            }
+
+            Console.WriteLine($"entities.Count:{entities.Count}");
+
+            entities.ForEach(x => Console.WriteLine(x));
+
+            await DB.InsertAsync(entities.ToArray());
+
+        }
+    } 
 }

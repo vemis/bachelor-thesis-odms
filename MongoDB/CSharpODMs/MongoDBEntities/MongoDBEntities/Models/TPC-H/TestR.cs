@@ -8,10 +8,19 @@ using System.Text;
 
 namespace MongoDBEntities.Models.TPC_H
 {
-    public class TestR : Entity
+    public class TestR : IEntity
     {
-        
-        public BsonValue r_indexed;
-        public string r_comment;
+        [BsonId]
+        public int SMT { get; set; }
+
+        public object GenerateNewID()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HasDefaultID()
+        {
+            return false;
+        }
     }
 }
