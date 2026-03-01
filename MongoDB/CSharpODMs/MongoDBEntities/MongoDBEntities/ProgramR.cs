@@ -1,5 +1,8 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using BenchmarkDotNet.Running;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Entities;
+using MongoDBEntities.Benchmarks;
 using MongoDBEntities.Models.TPC_H;
 using System;
 using System.Collections.Generic;
@@ -32,6 +35,14 @@ namespace MongoDBEntities
         {
 
 
+            BenchmarkRunner.Run<MongoDBEntitiesBenchmarks>();
+
+            Console.WriteLine("Benchmark finished");
+
+            throw new Exception();
+
+
+
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
@@ -57,8 +68,12 @@ namespace MongoDBEntities
                 .CreateAsync();
             */
 
+            //var a2 = await QueriesRMongoDBEntities.A2();
+            //Console.WriteLine(a2.Count);
 
-
+            var b1 = await QueriesRMongoDBEntities.B1();
+            Console.WriteLine(b1.Count);
+            b1.ForEach(x => Console.WriteLine(x));
 
 
             /*
