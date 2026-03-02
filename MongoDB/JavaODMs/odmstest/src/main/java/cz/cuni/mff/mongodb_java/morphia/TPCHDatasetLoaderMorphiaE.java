@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Collectors;
 
 public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
     public static List<OrdersE> loadOrders(String filePath, Datastore datastore) {
@@ -53,7 +54,7 @@ public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
 
         List<String[]> customers = readDataFromCustomSeparator(filePath);
 
-        ArrayList<CustomerE> customerInstances = new ArrayList<>();
+        /*ArrayList<CustomerE> customerInstances = new ArrayList<>();
 
         for (int i = 0; i < customers.size(); i++) {//for (String[] row : customers) {
             System.out.println("Customer:" + Integer.toString(i) + "/" + Integer.toString(customers.size()));
@@ -68,16 +69,49 @@ public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
                     Double.parseDouble(row[5]),
                     row[6],
                     row[7],
-                    orders
+                    orders.stream()
+                            .filter(item -> item.getO_custkey() == Integer.parseInt(row[0]))
+                            .collect(Collectors.toList())
             );
             //datastore.save(customer);//WriteConcern. UNACKNOWLEDGED
             customerInstances.add(customer);
-        }
+        }*/
+
+        LongAdder counter = new LongAdder();
+        int total = customers.size();
+
+        List<CustomerE> customerInstances = customers
+                .parallelStream()
+                .map(row ->
+                {
+                    counter.increment();
+                    long current = counter.sum();
+
+                    if (current % 10_000 == 0) {
+                        System.out.println("Processed " + current + " / " + total);
+                    }
+
+                    return new CustomerE(
+                            Integer.parseInt(row[0]),
+                            row[1],
+                            row[2],
+                            Integer.parseInt(row[3]),
+                            row[4],
+                            Double.parseDouble(row[5]),
+                            row[6],
+                            row[7],
+                            orders.stream()
+                                    .filter(item -> item.getO_custkey() == Integer.parseInt(row[0]))
+                                    .collect(Collectors.toList())
+                    );
+                })
+                .toList();
+
 
         return customerInstances;
     }
 
-    public static List<NationE> loadNations(String filePath, List<CustomerE> customers,  Datastore datastore) {
+    public static void loadNations(String filePath, List<CustomerE> customers,  Datastore datastore) {
 
         List<String[]> nations = readDataFromCustomSeparator(filePath);
 
@@ -90,13 +124,19 @@ public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
                     row[1],
                     Integer.parseInt(row[2]),
                     row[3],
-                    customers
+                    customers.stream()
+                            .filter(item -> item.getC_nationkey() == Integer.parseInt(row[0]))
+                            .collect(Collectors.toList())
             );
             //datastore.save(nation);
             nationInstances.add(nation);
         }
 
-        return nationInstances;
+        for (NationE nation : nationInstances) {
+            datastore.insert(nation);
+        }
+
+        //return nationInstances;
     }
 
     public static void loadRegions(String filePath, List<NationE> nations, Datastore datastore) {
@@ -112,7 +152,9 @@ public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
                     Integer.parseInt(row[0]),
                     row[1],
                     row[2],
-                    nations
+                    nations.stream()
+                            .filter(item -> item.getN_regionkey() == Integer.parseInt(row[0]))
+                            .collect(Collectors.toList())
             );
             //datastore.save(region);
             //regionInstances[i] = region;

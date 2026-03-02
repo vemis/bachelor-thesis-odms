@@ -48,7 +48,7 @@ public class MainE {
         System.out.println("CustomerEs created!");
 
         // Create Nations
-        var nations = TPCHDatasetLoaderMorphiaE.loadNations("..\\..\\..\\dataset\\TPC-H\\tpch-data\\nation.tbl", customers,  datastore);
+        /*var nations = */TPCHDatasetLoaderMorphiaE.loadNations("..\\..\\..\\dataset\\TPC-H\\tpch-data\\nation.tbl", customers,  datastore);
         System.out.println("NationEs created!");
 
         // Create Regions

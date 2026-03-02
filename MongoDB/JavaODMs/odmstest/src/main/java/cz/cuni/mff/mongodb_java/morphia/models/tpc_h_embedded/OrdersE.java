@@ -22,6 +22,10 @@ public class OrdersE {
     private String o_comment;
     //private ArrayList<> lineitems;TODO: SOME REFERENCE
 
+    public int getO_custkey() {
+        return o_custkey;
+    }
+
     public OrdersE() {}
 
     public OrdersE(int o_orderkey, int o_custkey, String o_orderstatus,String o_totalprice, LocalDate o_orderdate, String o_orderpriority, String o_clerk, String o_shippriority,  String o_comment) {

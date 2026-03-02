@@ -1,6 +1,9 @@
 package cz.cuni.mff.mongodb_java.morphia;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 abstract class T {
     public T(int a) {
@@ -12,11 +15,14 @@ abstract class T {
 }
 
 class TT extends T {
+    public int a;
+
     public TT() {
         System.out.println("TT empty");
     }
 
     public TT(int a) {
+        this.a = a;
         System.out.println("TT int");
     }
 
@@ -30,9 +36,16 @@ public class MainTest {
 
     public static void main(String[] args) {
 
-        System.out.println(
-                LocalDate.parse("1996-01-02")
-        );
+        List<TT> originalList = new ArrayList<TT>();
+        originalList.add(new TT(1));
+        originalList.add(new TT(2));
+        originalList.add(new TT(3));
+
+        List<TT> filteredList = originalList.stream()
+                .filter(item -> item.a == 1)
+                .collect(Collectors.toList());
+
+        filteredList.forEach(item -> System.out.println(item.a));
 
     }
 

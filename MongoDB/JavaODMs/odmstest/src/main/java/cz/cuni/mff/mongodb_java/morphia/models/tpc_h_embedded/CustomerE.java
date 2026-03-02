@@ -22,6 +22,10 @@ public class CustomerE {
 
     List<OrdersE> orders;
 
+    public int getC_nationkey() {
+        return c_nationkey;
+    }
+
     public CustomerE() {}
 
     public CustomerE(int c_custkey,
