@@ -4,7 +4,6 @@ package cz.cuni.mff.mongodb_java.springdata_r;
 
 import cz.cuni.mff.mongodb_java.TPCHDatasetLoader;
 
-import java.lang.reflect.Constructor;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;

@@ -55,11 +55,11 @@ async function run() {
 */
 
     // Queries
-    /*console.log("Start D1")
-    const d1 = await queriesR.D1()
-    console.log(d1.length)
-    console.log("D1 finished")
-    console.log(d1)*/
+    console.log("Start B1")
+    const b1 = await queriesR.B1()
+    console.log(b1.length)
+    console.log("B1 finished")
+    console.log(b1)
 
     benchmarksR.benchmarkQuery(
         //queriesR.A1,
