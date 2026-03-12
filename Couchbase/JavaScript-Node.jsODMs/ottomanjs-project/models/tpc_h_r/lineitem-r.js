@@ -2,26 +2,14 @@ import { Schema, model } from 'ottoman';
 
 
 
-const LineitemRSchema = new mongoose.Schema({
+const LineitemRSchema = new Schema({
     //l_id
-    _id: String,
+    id: String,
 
-    l_orderkey:{
-        type: Number,
-        index: true
-    },
-    l_partkey:{
-        type: Number,
-        index: true
-    },
-    l_suppkey:{
-        type: Number,
-        index: true
-    },
-    l_ps_id:{
-        type:String,
-        index:true
-    },
+    l_orderkey: String,
+    l_partkey: String,
+    l_suppkey: String,
+    l_ps_id: String,
 
     l_linenumber:Number,
     l_quantity:Number,
@@ -37,7 +25,33 @@ const LineitemRSchema = new mongoose.Schema({
     l_shipinstruct: String,
     l_shipmode: String,
     l_comment: String
-
 });
 
-export default mongoose.model("LineitemR", LineitemRSchema);
+LineitemRSchema.index.findBy_l_orderkey = {
+    by: "l_orderkey",
+    type: "n1ql"
+};
+
+LineitemRSchema.index.findBy_l_partkey = {
+    by: "l_partkey",
+    type: "n1ql"
+};
+
+LineitemRSchema.index.findBy_l_suppkey = {
+    by: "l_suppkey",
+    type: "n1ql"
+};
+
+LineitemRSchema.index.findBy_l_ps_id = {
+  by: "l_ps_id",
+  type: "n1ql"
+};
+
+export const LineitemR =  model("LineitemR", LineitemRSchema,
+    {
+        idKey: "id",
+        scopeName:'ottoman_scope_r',
+        collectionName:'LineitemR',
+        keyGenerator: ({ metadata }) => "",
+        keyGeneratorDelimiter: ""
+    });

@@ -2,23 +2,34 @@ import { Schema, model } from 'ottoman';
 
 
 
-const PartsuppRSchema = new mongoose.Schema({
+const PartsuppRSchema = new Schema({
         
     //@Id private String ps_id;
-    _id: String,
+    id: String,
     
-    ps_partKey:{
-        type:Number,
-        index:true
-    },
-    ps_suppKey:{
-        type:Number,
-        index:true
-    },
+    ps_partKey: String,
+    ps_suppKey: String,
 
     ps_availqty: Number,
     ps_supplycost: Number,
     ps_comment: String
 });
 
-export default mongoose.model("PartsuppR", PartsuppRSchema);
+PartsuppRSchema.index.findBy_ps_partKey = {
+    by: "ps_partKey",
+    type: 'n1ql',
+};
+
+PartsuppRSchema.index.findBy_ps_suppKey = {
+    by: "ps_suppKey",
+    type: 'n1ql',
+};
+
+export const PartsuppR = model("PartsuppR", PartsuppRSchema,
+    {
+        idKey: "id",
+        scopeName:'ottoman_scope_r',
+        collectionName:'PartsuppR',
+        keyGenerator: ({ metadata }) => "",
+        keyGeneratorDelimiter: ""
+    });

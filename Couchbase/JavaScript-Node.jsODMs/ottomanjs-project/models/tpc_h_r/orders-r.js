@@ -2,13 +2,10 @@ import { Schema, model } from 'ottoman';
 
 
 
-const OrdersRSchema = new mongoose.Schema({
+const OrdersRSchema = new Schema({
     //o_orderkey
-    _id: Number,
-    o_custkey: {
-        type: Number,
-        index: true
-    },
+    id: String,
+    o_custkey: String,
     o_orderstatus:String,
     o_totalprice:String,
     o_orderdate: Date,
@@ -18,4 +15,16 @@ const OrdersRSchema = new mongoose.Schema({
     o_comment:String
 });
 
-export default mongoose.model("OrdersR", OrdersRSchema);
+OrdersRSchema.index.findBy_o_custkey = {
+    by: "o_custkey",
+    type: 'n1ql',
+};
+
+export const OrdersR = model("OrdersR", OrdersRSchema,
+    {
+        idKey: "id",
+        scopeName:'ottoman_scope_r',
+        collectionName:'OrdersR',
+        keyGenerator: ({ metadata }) => "",
+        keyGeneratorDelimiter: ""
+    });

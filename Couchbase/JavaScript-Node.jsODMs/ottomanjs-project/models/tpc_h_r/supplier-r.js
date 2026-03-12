@@ -2,22 +2,31 @@ import { Schema, model } from 'ottoman';
 
 
 
-const SupplierRSchema = new mongoose.Schema({
+const SupplierRSchema = new Schema({
         
     //@Id private int s_suppkey;
-    _id: Number,
+    id: String,
     
     s_name: String,
     s_address: String,
     
-    s_nationkey: {
-        type: Number,
-        index: true
-    },
+    s_nationkey: String,
     s_phone: String,
     s_acctbal: Number,
 
     s_comment: String
 });
 
-export default mongoose.model("SupplierR", SupplierRSchema);
+SupplierRSchema.index.findBy_s_nationkey = {
+    by: "s_nationkey",
+    type: 'n1ql',
+};
+
+export const SupplierR = model("SupplierR", SupplierRSchema,
+    {
+        idKey: "id",
+        scopeName:'ottoman_scope_r',
+        collectionName:'SupplierR',
+        keyGenerator: ({ metadata }) => "",
+        keyGeneratorDelimiter: ""
+    });

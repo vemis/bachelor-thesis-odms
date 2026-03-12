@@ -6,6 +6,10 @@ await connect({
     scopeName: 'ottoman_scope_r',
     username: 'Administrator',
     password: 'password',
+    timeouts: {
+        kvTimeout: 20_000,
+        queryTimeout: 300_000
+    }
 });
 
 console.log("Connected to Couchbase!");

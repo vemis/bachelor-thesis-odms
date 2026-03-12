@@ -1,10 +1,10 @@
 import { Schema, model } from 'ottoman';
 
 
-const PartRSchema = new mongoose.Schema({
+const PartRSchema = new Schema({
         
     //@Id private int p_partkey;
-    _id: Number,
+    id: String,
     
     p_name: String,
     p_mfgr: String,
@@ -16,4 +16,11 @@ const PartRSchema = new mongoose.Schema({
     p_commen: String
 });
 
-export default mongoose.model("PartR", PartRSchema);
+export const PartR = model("PartR", PartRSchema,
+    {
+        idKey: "id",
+        scopeName:'ottoman_scope_r',
+        collectionName:'PartR',
+        keyGenerator: ({ metadata }) => "",
+        keyGeneratorDelimiter: ""
+    });
