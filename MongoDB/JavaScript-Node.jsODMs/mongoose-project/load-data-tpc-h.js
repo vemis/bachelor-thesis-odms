@@ -20,6 +20,8 @@ async function readDataFromCustomSeparator(filePath){
     return rows.map(row => row.split('|'));
 }
 
+
+
 async function loadRegions(filePath){
     try {
         const rowsOfData = await readDataFromCustomSeparator(filePath)

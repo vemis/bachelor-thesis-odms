@@ -19,12 +19,15 @@ function benchmarkQuery(...funcs) {
     suite.on('cycle', function (event) {
         const bench = event.target;
 
+        const funcName = bench.name;
         const opsPerSec = bench.hz;
         const avgSeconds = bench.stats.mean;
         const avgMs = avgSeconds * 1000;
 
+        console.log(`${funcName}:`)
         console.log(`Ops/sec: ${opsPerSec.toFixed(2)}`);
         console.log(`Average time per op: ${avgMs.toFixed(3)} ms`);
+        console.log("---------------")
     })
     .on('complete', function () {
         console.log('Fastest is ' + this.filter('fastest').map('name'));
