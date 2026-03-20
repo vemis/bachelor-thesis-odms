@@ -6,7 +6,6 @@ import org.springframework.data.couchbase.repository.Collection;
 import org.springframework.data.couchbase.repository.Scope;
 
 
-
 @Document
 @Scope("spring_scope_r")
 @Collection("CustomerR")

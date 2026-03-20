@@ -11,6 +11,7 @@ import reactor.core.publisher.Flux;
 
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TPCHDatasetLoader {
@@ -93,5 +94,15 @@ public class TPCHDatasetLoader {
 
         System.out.println("Flux saved!");
 
+    }
+
+    protected static <T> List<List<T>> partition(List<T> list, int batchSize) {
+        List<List<T>> batches = new ArrayList<>();
+
+        for (int i = 0; i < list.size(); i += batchSize) {
+            batches.add(list.subList(i, Math.min(i + batchSize, list.size())));
+        }
+
+        return batches;
     }
 }
