@@ -88,9 +88,10 @@ public class MainR {
         System.out.println("A1 size: " + lSize);
         System.out.println("Query A1 finished");*/
 
-        /*var b2 = QueriesMorphiaR.B2(datastore);
-        System.out.println(b2.get(0));
-        System.out.println(b2.size());*/
+        var e3 = QueriesMorphiaR.E3(datastore);
+        System.out.println(e3.get(0));
+        e3.forEach(System.out::println);
+        System.out.println(e3.size());
 
 
     }
