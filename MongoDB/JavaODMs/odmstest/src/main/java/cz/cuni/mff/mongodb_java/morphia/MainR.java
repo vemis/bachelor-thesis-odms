@@ -24,6 +24,7 @@ public class MainR {
         datastore.getMapper().mapPackage("cz.cuni.mff.mongodb_java.morphia.models.tpc_h_relational");
 
         datastore.ensureIndexes();
+        
 
         System.out.println("Morphia initialized!");
 /*
@@ -88,10 +89,10 @@ public class MainR {
         System.out.println("A1 size: " + lSize);
         System.out.println("Query A1 finished");*/
 
-        var e3 = QueriesMorphiaR.E3(datastore);
-        System.out.println(e3.get(0));
-        e3.forEach(System.out::println);
-        System.out.println(e3.size());
+        var q1 = QueriesMorphiaR.Q1(datastore);
+        System.out.println(q1.get(0));
+        //q1.forEach(System.out::println);
+        System.out.println(q1.size());
 
 
     }

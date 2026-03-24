@@ -64,6 +64,13 @@ public class MorphiaBenchmarksR {
         List<Document> b2 = QueriesMorphiaR.B2(datastore);
     }
 
+
+    //MorphiaBenchmarksR.C1  avgt    5  8698,324 ± 554,852  ms/op
+    //@Benchmark
+    public void C1(){
+        List<Document> c1 = QueriesMorphiaR.C1(datastore);
+    }
+
     /**
      * Benchmark              Mode  Cnt     Score       Error  Units
      * MorphiaBenchmarksR.C2  avgt    5  9484,373 ± 11313,979  ms/op
@@ -73,6 +80,24 @@ public class MorphiaBenchmarksR {
         List<Document> c2 = QueriesMorphiaR.C2(datastore);
     }
 
+    //MorphiaBenchmarksR.C3  avgt    5  7197,243 ± 698,923  ms/op
+    //@Benchmark
+    public void C3(){
+        List<Document> c3 = QueriesMorphiaR.C3(datastore);
+    }
+
+    //MorphiaBenchmarksR.C4  avgt    5  9273,343 ± 713,795  ms/op
+    //@Benchmark
+    public void C4(){
+        List<Document> c4 = QueriesMorphiaR.C4(datastore);
+    }
+
+    //MorphiaBenchmarksR.C5  avgt    5  5262,147 ± 927,128  ms/op
+    //@Benchmark
+    public void C5(){
+        List<Document> c5 = QueriesMorphiaR.C5(datastore);
+    }
+
     /**
      * Benchmark              Mode  Cnt   Score   Error  Units
      * MorphiaBenchmarksR.D1  avgt    5  51,989 ± 8,473  ms/op
@@ -80,6 +105,42 @@ public class MorphiaBenchmarksR {
     //@Benchmark
     public  void D1(){
         List<Document> d1 = QueriesMorphiaR.D1(datastore);
+    }
+
+    //MorphiaBenchmarksR.D2  avgt    5  1365,556 ± 103,776  ms/op
+    //@Benchmark
+    public void D2(){
+        List<Document> d2 = QueriesMorphiaR.D2(datastore);
+    }
+
+    //MorphiaBenchmarksR.D3  avgt    5   332,025 ±  35,339  ms/op
+    //@Benchmark
+    public void D3(){
+        List<Document> d3 = QueriesMorphiaR.D3(datastore);
+    }
+
+    //MorphiaBenchmarksR.E1  avgt    5   248,624 ±  21,835  ms/op
+    //@Benchmark
+    public void E1(){
+        List<CustomerR> e1 = QueriesMorphiaR.E1(datastore);
+    }
+
+    //MorphiaBenchmarksR.E2  avgt    5  2517,833 ± 236,235  ms/op
+    //@Benchmark
+    public void E2(){
+        List<OrdersR> e2 = QueriesMorphiaR.E2(datastore);
+    }
+
+    //MorphiaBenchmarksR.E3  avgt    5    18,525 ±   0,563  ms/op
+    //@Benchmark
+    public void E3(){
+        List<Document> e3 = QueriesMorphiaR.E3(datastore);
+    }
+
+    //MorphiaBenchmarksR.Q1  avgt    5  2427,137 ± 278,735  ms/op
+    //@Benchmark
+    public void Q1(){
+        List<Document> q1 = QueriesMorphiaR.Q1(datastore);
     }
 
     @Setup(Level.Trial)

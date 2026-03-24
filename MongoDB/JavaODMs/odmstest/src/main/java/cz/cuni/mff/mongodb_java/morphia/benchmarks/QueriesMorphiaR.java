@@ -2,21 +2,23 @@ package cz.cuni.mff.mongodb_java.morphia.benchmarks;
 
 import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_relational.*;
 import dev.morphia.Datastore;
-import dev.morphia.aggregation.expressions.DateExpressions;
-import dev.morphia.aggregation.expressions.Expressions;
+import dev.morphia.aggregation.expressions.*;
 import dev.morphia.aggregation.stages.*;
-import dev.morphia.aggregation.expressions.AccumulatorExpressions;
 
+import dev.morphia.aggregation.expressions.DateExpressions;
 
 import dev.morphia.query.FindOptions;
 import org.bson.Document;
 
 import javax.print.Doc;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import static dev.morphia.query.filters.Filters.*;
+
+import dev.morphia.aggregation.AggregationImpl;
 
 public class QueriesMorphiaR {
     /**
@@ -194,7 +196,7 @@ public class QueriesMorphiaR {
                         .include("ordersR.o_orderdate")
                         .include("ordersR.o_totalprice")
                 )
-                .limit(300_500)
+                .limit(1_500_000)
                 .execute(Document.class)
                 .toList();
 
@@ -593,6 +595,137 @@ public class QueriesMorphiaR {
         //return e3;
     }
 
+
+
+     // ## Advanced Queries
+     // ## TPC-H Benchmark Queries
+
+    /**
+     * ### Q1) Pricing Summary Report Query
+     *
+     * //This query reports the amount of business that was billed, shipped, and returned
+     * ```sql
+     * SELECT
+     *   l_returnflag,
+     *   l_linestatus,
+     *   SUM(l_quantity) AS sum_qty,
+     *   SUM(l_extendedprice) AS sum_base_price,
+     *   SUM(l_extendedprice * (1 - l_discount)) AS sum_disc_price,
+     *   SUM(l_extendedprice * (1 - l_discount) * (1 + l_tax)) AS sum_charge,
+     *   AVG(l_quantity) AS avg_qty,
+     *   AVG(l_extendedprice) AS avg_price,
+     *   AVG(l_discount) AS avg_disc,
+     *   COUNT(*) AS count_order
+     * FROM lineitem
+     * WHERE l_shipdate <= DATE_SUB('1998-12-01', INTERVAL 90 DAY)
+     * GROUP BY l_returnflag, l_linestatus
+     * ORDER BY l_returnflag, l_linestatus
+     * ```
+     */
+    public static List<Document> Q1(Datastore datastore){
+        var q1 = datastore.aggregate(LineitemR.class)
+                .match(
+                        expr(
+                                ComparisonExpressions.lte(
+                                        Expressions.field("l_shipdate"),
+                                        DateExpressions.dateSubtract(
+                                                Expressions.value(LocalDate.parse("1998-12-01")), // 1998-12-01
+                                                90,
+                                                TimeUnit.DAY
+                                        )
+                                )
+                        )
+                )
+                .group(
+                        Group.group(
+                                Group.id(
+                                        Expressions.document()
+                                                .field("l_returnflag", Expressions.field("l_returnflag"))
+                                                .field("l_linestatus", Expressions.field("l_linestatus"))
+                                )
+
+                        )
+                                // SUM(l_quantity)
+                                .field("sum_qty",
+                                        AccumulatorExpressions.sum(Expressions.field("l_quantity"))
+                                )
+                                // SUM(l_extendedprice)
+                                .field("sum_base_price",
+                                        AccumulatorExpressions.sum(Expressions.field("l_extendedprice"))
+                                )
+                                // SUM(l_extendedprice * (1 - l_discount))
+                                .field("sum_disc_price",
+                                        AccumulatorExpressions.sum(
+                                                MathExpressions.multiply(
+                                                        Expressions.field("l_extendedprice"),
+                                                        MathExpressions.subtract(
+                                                                Expressions.value(1),
+                                                                Expressions.field("l_discount")
+                                                        )
+                                                )
+                                        )
+                                )
+                                // SUM(l_extendedprice * (1 - l_discount) * (1 + l_tax))
+                                .field("sum_charge",
+                                        AccumulatorExpressions.sum(
+                                                MathExpressions.multiply(
+                                                        Expressions.field("l_extendedprice"),
+                                                        MathExpressions.subtract(
+                                                                Expressions.value(1),
+                                                                Expressions.field("l_discount")
+                                                        ),
+                                                        MathExpressions.add(
+                                                                Expressions.value(1),
+                                                                Expressions.field("l_tax")
+                                                        )
+                                                )
+                                        )
+                                )
+                                // AVG(l_quantity)
+                                .field("avg_qty",
+                                        AccumulatorExpressions.avg(Expressions.field("l_quantity"))
+                                )
+
+                                // AVG(l_extendedprice)
+                                .field("avg_price",
+                                        AccumulatorExpressions.avg(Expressions.field("l_extendedprice"))
+                                )
+
+                                // AVG(l_discount)
+                                .field("avg_disc",
+                                        AccumulatorExpressions.avg(Expressions.field("l_discount"))
+                                )
+
+                                // COUNT(*)
+                                .field("count_order",
+                                        AccumulatorExpressions.sum(Expressions.value(1))
+                                )
+                )
+                .project(
+                        Projection.project()
+
+                                //.include("_id", Expressions.field("_id"))
+                                .include("l_returnflag", Expressions.field("_id.l_returnflag"))
+                                .include("l_linestatus", Expressions.field("_id.l_linestatus"))
+                                .include("sum_qty")
+                                .include("sum_base_price")
+                                .include("sum_disc_price")
+                                .include("sum_charge")
+                                .include("avg_qty")
+                                .include("avg_price")
+                                .include("avg_disc")
+                                .include("count_order")
+                                .suppressId()
+                );
+
+
+        //var p = ((AggregationImpl<LineitemR>)q1).pipeline();
+        //System.out.println(p);
+
+        return q1
+                .execute(Document.class)
+                .toList();
+    }
 
 }
 
