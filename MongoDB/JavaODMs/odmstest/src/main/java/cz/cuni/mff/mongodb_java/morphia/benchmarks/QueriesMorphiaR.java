@@ -8,6 +8,8 @@ import dev.morphia.aggregation.stages.*;
 import dev.morphia.aggregation.expressions.DateExpressions;
 
 import dev.morphia.query.FindOptions;
+import dev.morphia.query.filters.Filter;
+import dev.morphia.query.filters.Filters;
 import org.bson.Document;
 
 import javax.print.Doc;
@@ -716,6 +718,9 @@ public class QueriesMorphiaR {
                                 .include("avg_disc")
                                 .include("count_order")
                                 .suppressId()
+                )
+                .sort(
+                        Sort.sort().ascending("l_returnflag", "l_linestatus")
                 );
 
 
@@ -727,6 +732,331 @@ public class QueriesMorphiaR {
                 .toList();
     }
 
+
+    /**
+     * ### Q2) Minimum Cost Supplier Query
+     *
+     * //This query finds which supplier should be selected to place an order for a given part in a given region
+     * ```sql
+     * SELECT
+     *   s.s_acctbal,
+     *   s.s_name,
+     *   n.n_name,
+     *   p.p_partkey,
+     *   p.p_mfgr,
+     *   s.s_address,
+     *   s.s_phone,
+     *   s.s_comment
+     * FROM
+     *   part p,
+     *   supplier s,
+     *   partsupp ps,
+     *   nation n,
+     *   region r
+     * WHERE
+     *   p.p_partkey = ps.ps_partkey
+     *   AND s.s_suppkey = ps.ps_suppkey
+     *   AND p.p_size = 15
+     *   AND p.p_type LIKE '%BRASS'
+     *   AND s.s_nationkey = n.n_nationkey
+     *   AND n.n_regionkey = r.r_regionkey
+     *   AND r.r_name = 'EUROPE'
+     *   AND ps.ps_supplycost = (
+     *     SELECT MIN(ps.ps_supplycost)
+     *     FROM
+     *       partsupp ps,
+     *       supplier s,
+     *       nation n,
+     *       region r
+     *     WHERE
+     *       p.p_partkey = ps.ps_partkey
+     *       AND s.s_suppkey = ps.ps_suppkey
+     *       AND s.s_nationkey = n.n_nationkey
+     *       AND n.n_regionkey = r.r_regionkey
+     *       AND r.r_name = 'EUROPE'
+     *   )
+     * ORDER BY
+     *   s.s_acctbal DESC,
+     *   n.n_name,
+     *   s.s_name,
+     *   p.p_partkey
+     * ```
+     */
+    public static List<Document> Q2(Datastore datastore){
+        var q2 = datastore.aggregate(PartR.class)
+                // Filter part conditions
+                .match(
+                        Filters.eq("p_size", 15),
+                        regex("p_type","BRASS$")
+                )
+                // Join with partsupp
+                .lookup(
+                        Lookup.lookup(PartsuppR.class)
+                                .localField("_id")
+                                .foreignField("ps_partkey")
+                                .as("ps")
+                )
+                .unwind(Unwind.unwind("ps"))
+                // Join with supplier
+                .lookup(
+                        Lookup.lookup(SupplierR.class)
+                                .localField("ps.ps_suppkey")
+                                .foreignField("_id")
+                                .as("s")
+                )
+                .unwind(Unwind.unwind("s"))
+                // Join with nation
+                .lookup(
+                        Lookup.lookup(NationR.class)
+                                .localField("s.s_nationkey")
+                                .foreignField("_id")
+                                .as("n")
+                )
+                .unwind(Unwind.unwind("n"))
+                // Join with region
+                .lookup(
+                        Lookup.lookup(RegionR.class)
+                                .localField("n.n_regionkey")
+                                .foreignField("_id")
+                                .as("r")
+                )
+                .unwind(Unwind.unwind("r"))
+                // Filter region
+                .match(
+                        Filters.eq("r.r_name", "EUROPE")
+                )
+                // Find minimum supply cost per part
+                .group(
+                        Group.group(
+                                        Group.id(
+                                            Expressions.field("_id")
+                                        )
+
+                        )
+
+                                .field("minSupplyCost",
+                                        AccumulatorExpressions.min(Expressions.field("ps.ps_supplycost"))
+                                )
+                                .field("docs",
+                                        AccumulatorExpressions.push(Expressions.field("$$ROOT")))
+                )
+                // Keep only docs with min supply cost
+                .unwind(Unwind.unwind("docs"))
+                .match(
+                        expr(
+                                ComparisonExpressions.eq(
+                                        Expressions.field("docs.ps.ps_supplycost"),
+                                        Expressions.field("minSupplyCost")
+                                )
+                        )
+                )
+                .replaceRoot(ReplaceRoot.replaceRoot(Expressions.field("docs")))
+
+                .project(
+                        Projection.project()
+
+                                .include("s_acctbal", Expressions.field("s.s_acctbal"))
+                                .include("s_name", Expressions.field("s.s_name"))
+                                .include("n_name", Expressions.field("n.n_name"))
+                                .include("p_partkey")
+                                .include("p_mfgr")
+                                .include("s_address", Expressions.field("s.s_address"))
+                                .include("s_phone", Expressions.field("s.s_phone"))
+                                .include("s_comment", Expressions.field("s.s_comment"))
+                                .suppressId()
+                )
+                .sort(
+                        Sort.sort()
+                                .descending("s_acctbal")
+                                .ascending("n_name", "s_name", "p_partkey")
+                )
+
+
+                .execute(Document.class)
+                .toList();
+
+        return q2;
+    }
+
+
+    /**
+     *
+     ### Q3) Shipping Priority Query
+
+     //This query retrieves the 10 unshipped orders with the highest value
+     ```sql
+     SELECT
+     l.l_orderkey,
+     SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue,
+     o.o_orderdate,
+     o.o_shippriority
+     FROM
+     customer c,
+     orders o,
+     lineitem l
+     WHERE
+     c.c_mktsegment = 'BUILDING'
+     AND c.c_custkey = o.o_custkey
+     AND l.l_orderkey = o.o_orderkey
+     AND o.o_orderdate < '1995-03-15'
+     AND l.l_shipdate > '1995-03-15'
+     GROUP BY
+     l.l_orderkey,
+     o.o_orderdate,
+     o.o_shippriority
+     ORDER BY
+     revenue DESC,
+     o.o_orderdate
+     ```
+     */
+    public static List<Document> Q3(Datastore datastore){
+        var q3 = datastore.aggregate(CustomerR.class)
+                // Filter part conditions
+                .match(
+                        Filters.eq("c_mktsegment", "BUILDING")
+                )
+
+                .lookup(
+                        Lookup.lookup(OrdersR.class)
+                                .localField("_id")
+                                .foreignField("o_custkey")
+                                .as("orders")
+                )
+                .unwind(Unwind.unwind("orders"))
+
+                .match(
+                        Filters.lt("orders.o_orderdate", LocalDate.parse("1995-03-15"))
+                )
+
+                .lookup(
+                        Lookup.lookup(LineitemR.class)
+                                .localField("orders._id")
+                                .foreignField("l_orderkey")
+                                .as("lineitems")
+                )
+                .unwind(Unwind.unwind("lineitems"))
+
+                .match(
+                        Filters.gt("lineitems.l_shipdate", LocalDate.parse("1995-03-15"))
+                )
+
+                .group(
+                        Group.group(
+                                        Group.id(
+                                                Expressions.document()
+                                                        .field("l_orderkey", Expressions.field("lineitems.l_orderkey"))
+                                                        .field("o_orderdate", Expressions.field("orders.o_orderdate"))
+                                                        .field("o_shippriority", Expressions.field("orders.o_shippriority"))
+                                        )
+
+                                )
+                                // SUM(lineitems.l_extendedprice * (1 - lineitems.l_discount)) AS revenue,
+                                .field("revenue",
+                                        AccumulatorExpressions.sum(
+                                                MathExpressions.multiply(
+                                                        Expressions.field("lineitems.l_extendedprice"),
+                                                        MathExpressions.subtract(
+                                                                Expressions.value(1),
+                                                                Expressions.field("lineitems.l_discount")
+                                                        )
+                                                )
+                                        )
+                                )
+                )
+
+                .sort(
+                        Sort.sort()
+                                .descending("revenue")
+                                .ascending("_id.o_orderdate")
+                )
+
+                // Limiting to top 10
+                .limit(10)
+
+                .project(
+                        Projection.project()
+
+                                .include("l_orderkey", Expressions.field("_id.l_orderkey"))
+                                .include("revenue")
+                                .include("o_orderdate", Expressions.field("_id.o_orderdate"))
+                                .include("o_shippriority", Expressions.field("_id.o_shippriority"))
+                                .suppressId()
+                )
+
+                .execute(Document.class)
+                .toList();
+
+        return q3;
+    }
+
+
+    /**
+     * ### Q4) Order Priority Checking Query
+     *
+     * //This query determines how well the order priority system is working and gives an assessment of customer satisfaction
+     * ```sql
+     * SELECT
+     *   o_orderpriority,
+     *   COUNT(*) AS order_count
+     * FROM
+     *   orders
+     * WHERE
+     *   o_orderdate >= '1993-07-01'
+     *   AND o_orderdate < DATE_ADD('1993-07-01', INTERVAL 3 MONTH)
+     *   AND EXISTS (
+     *     SELECT *
+     *     FROM
+     *       lineitem
+     *     WHERE
+     *       l_orderkey = o_orderkey
+     *       AND l_commitdate < l_receiptdate
+     *   )
+     * GROUP BY
+     *   o_orderpriority
+     * ORDER BY
+     *   o_orderpriority
+     * ```
+     */
+    public static List<Document> Q4(Datastore datastore){
+        var q4 = datastore.aggregate(OrdersR.class)
+                .match(
+                        expr(
+                                BooleanExpressions.and(
+                                        ComparisonExpressions.gte(
+                                                Expressions.field("o_orderdate"),
+                                                Expressions.value(LocalDate.parse("1993-07-01"))
+                                        ),
+                                        ComparisonExpressions.lt(
+                                                Expressions.field("o_orderdate"),
+                                                DateExpressions.dateAdd(
+                                                        Expressions.value(LocalDate.parse("1993-07-01")),
+                                                        3,
+                                                        TimeUnit.MONTH
+                                                )
+                                        )
+                                )
+
+
+                        )
+                )
+                .lookup(
+                        Lookup.lookup(LineitemR.class)
+                                .let("orderkey",  Expressions.field("_id"))
+                                .as("matching_lineitems")
+                                .pipeline(
+                                        Match.match(
+                                                expr(
+                                                        BooleanExpressions.and()
+                                                )
+                                        )
+                                )
+                )
+
+                .execute(Document.class)
+                .toList();
+
+        return q4;
+    }
 }
 
 
