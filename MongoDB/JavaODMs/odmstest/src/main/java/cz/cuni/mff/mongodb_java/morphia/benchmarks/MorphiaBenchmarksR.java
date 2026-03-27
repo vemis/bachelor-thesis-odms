@@ -143,6 +143,31 @@ public class MorphiaBenchmarksR {
         List<Document> q1 = QueriesMorphiaR.Q1(datastore);
     }
 
+    //MorphiaBenchmarksR.Q2  avgt    5    176,005 ±   56,392  ms/op
+    //@Benchmark
+    public void Q2(){
+        List<Document> q2 = QueriesMorphiaR.Q2(datastore);
+    }
+
+    //MorphiaBenchmarksR.Q3  avgt    5   4130,161 ±  649,557  ms/op
+    //@Benchmark
+    public void Q3(){
+        List<Document> q3 = QueriesMorphiaR.Q3(datastore);
+    }
+
+    //MorphiaBenchmarksR.Q4  avgt    5   2233,994 ±  287,848  ms/op
+    //@Benchmark
+    public void Q4(){
+        List<Document> q4 = QueriesMorphiaR.Q4(datastore);
+    }
+
+    //MorphiaBenchmarksR.Q5  avgt    5  19415,863 ± 1729,709  ms/op
+    //@Benchmark
+    public void Q5(){
+        List<Document> q5 = QueriesMorphiaR.Q5(datastore);
+    }
+
+
     @Setup(Level.Trial)
     public void setup() {
         // Build complex object here
