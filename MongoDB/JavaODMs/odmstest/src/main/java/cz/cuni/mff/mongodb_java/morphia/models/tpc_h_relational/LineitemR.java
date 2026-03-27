@@ -3,7 +3,6 @@ package cz.cuni.mff.mongodb_java.morphia.models.tpc_h_relational;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Indexed;
-import org.bson.types.ObjectId;
 
 import java.time.LocalDate;
 
@@ -40,15 +39,15 @@ public class LineitemR {
     private String l_returnflag;
     private String l_linestatus;
     private LocalDate l_shipdate;
-    private String l_commitdate;
-    private String l_receiptdate;
+    private LocalDate l_commitdate;
+    private LocalDate l_receiptdate;
     private String l_shipinstruct;
     private String l_shipmode;
     private String l_comment;
 
     public LineitemR() {}
 
-    public LineitemR(int l_orderkey, int l_partkey, int l_suppkey, int l_linenumber, int l_quantity, double l_extendedprice, double l_discount, double l_tax, String l_returnflag, String l_linestatus, LocalDate l_shipdate, String l_commitdate, String l_receiptdate, String l_shipinstruct, String l_shipmode, String l_comment) {
+    public LineitemR(int l_orderkey, int l_partkey, int l_suppkey, int l_linenumber, int l_quantity, double l_extendedprice, double l_discount, double l_tax, String l_returnflag, String l_linestatus, LocalDate l_shipdate, LocalDate l_commitdate, LocalDate l_receiptdate, String l_shipinstruct, String l_shipmode, String l_comment) {
         this.l_ps_id = Integer.toString(l_partkey) + "|" + Integer.toString(l_suppkey);
         this.l_id = Integer.toString(l_orderkey) + Integer.toString(l_linenumber);
         this.l_orderkey = l_orderkey;
