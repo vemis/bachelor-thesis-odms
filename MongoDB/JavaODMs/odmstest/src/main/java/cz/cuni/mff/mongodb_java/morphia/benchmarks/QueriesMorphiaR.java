@@ -1042,20 +1042,83 @@ public class QueriesMorphiaR {
                 .lookup(
                         Lookup.lookup(LineitemR.class)
                                 .let("orderkey",  Expressions.field("_id"))
-                                .as("matching_lineitems")
                                 .pipeline(
                                         Match.match(
                                                 expr(
-                                                        BooleanExpressions.and()
+                                                        BooleanExpressions.and(
+                                                                ComparisonExpressions.eq(
+                                                                        Expressions.field("l_orderkey"),
+                                                                        Expressions.field("$$orderkey")
+                                                                ),
+                                                                ComparisonExpressions.lt(
+                                                                        Expressions.field("l_commitdate"),
+                                                                        Expressions.field("l_receiptdate")
+                                                                )
+                                                        )
                                                 )
                                         )
                                 )
+                                .as("matching_lineitems")
+                )
+                .match(
+                        Filters.ne("matching_lineitems", new Object[0]) // EXISTS equivalent
+                )
+                .group(
+                        Group.group(
+                                Group.id(
+                                        Expressions.field("o_orderpriority")
+                                )
+                        )
+                                .field("order_count",
+                                        AccumulatorExpressions.sum(Expressions.value(1)))
+                )
+                .sort(
+                        Sort.sort()
+                                .ascending("_id")
                 )
 
                 .execute(Document.class)
                 .toList();
 
         return q4;
+    }
+
+
+    /**
+     * ### Q5) Local Supplier Volume Query
+     *
+     * //This query lists the revenue volume done through local suppliers
+     * ```sql
+     * SELECT
+     *   n.n_name,
+     *   SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue
+     * FROM
+     *   customer c,
+     *   orders o,
+     *   lineitem l,
+     *   supplier s,
+     *   nation n,
+     *   region r
+     * WHERE
+     *   c.c_custkey = o.o_custkey
+     *   AND l.l_orderkey = o.o_orderkey
+     *   AND l.l_suppkey = s.s_suppkey
+     *   AND c.c_nationkey = s.s_nationkey
+     *   AND s.s_nationkey = n.n_nationkey
+     *   AND n.n_regionkey = r.r_regionkey
+     *   AND r.r_name = 'ASIA'
+     *   AND o.o_orderdate >= '1994-01-01'
+     *   AND o.o_orderdate < DATE_ADD('1994-01-01', INTERVAL 1 YEAR)
+     * GROUP BY
+     *   n.n_name
+     * ORDER BY
+     *   revenue DESC
+     * ```
+     */
+    public static List<Document> Q5(Datastore datastore){
+
+
+        return null;
     }
 }
 

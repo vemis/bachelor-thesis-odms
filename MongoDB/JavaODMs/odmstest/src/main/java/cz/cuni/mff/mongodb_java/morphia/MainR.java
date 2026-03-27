@@ -89,6 +89,7 @@ public class MainR {
         System.out.println("A1 size: " + lSize);
         System.out.println("Query A1 finished");*/
 
+
         var q4 = QueriesMorphiaR.Q4(datastore);
         System.out.println(q4.get(0));
         //System.out.println(q4.get(1));

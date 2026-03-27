@@ -206,8 +206,8 @@ public class TPCHDatasetLoaderMorphiaR extends TPCHDatasetLoader {
                             row[8],
                             row[9],
                             LocalDate.parse(row[10]),
-                            row[11],
-                            row[12],
+                            LocalDate.parse( row[11]),
+                            LocalDate.parse(row[12]),
                             row[13],
                             row[14],
                             row[15]
@@ -278,8 +278,8 @@ public class TPCHDatasetLoaderMorphiaR extends TPCHDatasetLoader {
                     row[8],
                     row[9],
                     LocalDate.parse(row[10]),
-                    row[11],
-                    row[12],
+                    LocalDate.parse(row[11]),
+                    LocalDate.parse(row[12]),
                     row[13],
                     row[14],
                     row[15]
