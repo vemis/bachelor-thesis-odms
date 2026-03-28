@@ -66,8 +66,8 @@ public class LogicCommandRunnerR {
             //System.out.println(a2.size());
 
             //System.out.println("Executing Query B1");
-            //var b1 = QueriesSpringDataR.B1(mongoTemplate);
-            //System.out.println(b1.size());
+            //var c1 = QueriesSpringDataR.B1(mongoTemplate);
+            //System.out.println(c1.size());
 
             //System.out.println("Executing Query C2");
             //var c2 = QueriesSpringDataR.C2(mongoTemplate);
@@ -78,6 +78,12 @@ public class LogicCommandRunnerR {
             //var d1 = QueriesSpringDataR.D1(mongoTemplate);
             //System.out.println(d1.size());
             //System.out.println("Query Executed.");
+
+            var c3 = QueriesSpringDataR.C3(mongoTemplate);
+            for (int i = 0; i < 3; i++) {
+                System.out.println(c3.get(i));
+            }
+            System.out.println(c3.size());
 
         };
     }

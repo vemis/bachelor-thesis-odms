@@ -55,6 +55,41 @@ public class QueriesSpringDataR {
     }
 
     /**
+     * ### A3) Indexed Columns
+     *
+     * This query selects all records from the customer table
+     * ```sql
+     * SELECT * FROM customer;
+     * ```
+     */
+    public static List<CustomerR> A3(MongoTemplate mongoTemplate){
+        List<CustomerR> a3 = mongoTemplate.findAll(CustomerR.class);
+
+        return a3;
+    }
+
+    /**
+     * ### A4) Indexed Columns — Range Query
+     *
+     * This query selects all records from the orders table where the order key is between 1000 and 50000
+     * ```sql
+     * SELECT * FROM orders
+     * WHERE o_orderkey BETWEEN 1000 AND 50000;
+     * ```
+     */
+    public static List<OrdersR> A4(MongoTemplate mongoTemplate) {
+        Query query = new Query().addCriteria(
+                Criteria.where("_id")
+                        .gte(1000)
+                        .lte(50000)
+        );
+        var a4 = mongoTemplate.find(query, OrdersR.class);
+
+        return a4;
+    }
+
+
+    /**
      * ### B1) COUNT
      *
      * This query counts the number of orders grouped by order month
@@ -89,6 +124,87 @@ public class QueriesSpringDataR {
                 Document.class
         ).getMappedResults();
     }
+
+    /**
+     * ### B2) MAX
+     *
+     * This query finds the maximum extended price from the lineitem table grouped by ship month
+     * ```sql
+     * SELECT DATE_FORMAT(l.l_shipdate, '%Y-%m') AS ship_month,
+     *        MAX(l.l_extendedprice) AS max_price
+     * FROM lineitem l
+     * GROUP BY ship_month;
+     * ```
+     */
+    public static List<Document> B2(MongoTemplate mongoTemplate) {
+
+        GroupOperation groupOperation = group().and("_id",
+                        DateOperators.dateOf("l_shipdate")
+                                .toString("%Y-%m")
+                )
+                .max("l_extendedprice").as("max_price");
+
+        ProjectionOperation projectionOperation = project()
+                .and("_id").as("shipMonth")
+                .and("max_price").as("maxPrice")
+                .andExclude("_id");
+
+        Aggregation aggregation = newAggregation(
+                groupOperation,
+                projectionOperation
+        );
+
+        return mongoTemplate.aggregate(
+                aggregation,
+                LineitemR.class,
+                Document.class
+        ).getMappedResults();
+    }
+
+    /**
+     * ## C) Joins
+     *
+     * ### C1) Non-Indexed Columns
+     *
+     * This query gives customer names, order dates, and total prices for customers
+     * ```sql
+     * SELECT c.c_name, o.o_orderdate, o.o_totalprice
+     * FROM customer c, orders o;
+     * ```
+     */
+    public static List<Document> C1(MongoTemplate mongoTemplate){
+        LookupOperation lookupOperation = LookupOperation.newLookup()
+                .from("ordersR")
+                //.localField("_id")
+                //.foreignField("o_custkey")
+                .pipeline()
+                .as("ordersR");
+        UnwindOperation unwindOperation = Aggregation.unwind("ordersR");
+
+        ProjectionOperation projectionOperation = project()
+                //.andExclude("_id")
+                .and("c_name").as("c_name")
+                .and("ordersR.o_orderdate").as("o_orderdate")
+                .and("ordersR.o_totalprice").as("o_totalprice");
+
+        LimitOperation limitOperation = Aggregation.limit(1_500_000);
+
+        Aggregation aggregation = newAggregation(
+                lookupOperation,
+                unwindOperation,
+                projectionOperation,
+                limitOperation
+        );
+
+        AggregationResults<Document> results =
+                mongoTemplate.aggregate(
+                        aggregation,
+                        CustomerR.class,
+                        Document.class);
+
+        return results.getMappedResults();
+    }
+
 
     /**
      * ### C2) Indexed Columns
@@ -129,6 +245,66 @@ public class QueriesSpringDataR {
 
         return results.getMappedResults();
     }
+
+
+    /**
+     * ### C3) Complex Join 1
+     *
+     * This query gives customer names, nation names, order dates, and total prices for customers
+     * ```sql
+     * SELECT c.c_name, n.n_name, o.o_orderdate, o.o_totalprice
+     * FROM customer c
+     * JOIN nation n ON c.c_nationkey = n.n_nationkey
+     * JOIN orders o ON c.c_custkey = o.o_custkey;
+     * ```
+     * @param mongoTemplate
+     * @return
+     */
+    public static List<Document> C3(MongoTemplate mongoTemplate) {
+
+        // Join customer -> orders
+        LookupOperation lookupOrders = LookupOperation.newLookup()
+                .from("ordersR")
+                .localField("_id")              // c_custkey
+                .foreignField("o_custkey")
+                .as("ordersR");
+
+        UnwindOperation unwindOrders = Aggregation.unwind("ordersR");
+
+        // Join customer -> nation
+        LookupOperation lookupNation = LookupOperation.newLookup()
+                .from("nationR")
+                .localField("c_nationkey")
+                .foreignField("_id")            // n_nationkey
+                .as("nationR");
+
+        UnwindOperation unwindNation = Aggregation.unwind("nationR");
+
+        // Final projection
+        ProjectionOperation projection = project()
+                .and("c_name").as("c_name")
+                .and("nationR.n_name").as("n_name")
+                .and("ordersR.o_orderdate").as("o_orderdate")
+                .and("ordersR.o_totalprice").as("o_totalprice");
+
+        Aggregation aggregation = newAggregation(
+                lookupOrders,
+                unwindOrders,
+                lookupNation,
+                unwindNation,
+                projection
+        );
+
+        AggregationResults<Document> results =
+                mongoTemplate.aggregate(
+                        aggregation,
+                        CustomerR.class,
+                        Document.class
+                );
+
+        return results.getMappedResults();
+    }
+
 
     /**
      * ### D1) UNION
