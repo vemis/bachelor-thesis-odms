@@ -7,11 +7,11 @@ const PartsuppRSchema = new mongoose.Schema({
     //@Id private String ps_id;
     _id: String,
     
-    ps_partKey:{
+    ps_partkey:{
         type:Number,
         index:true
     },
-    ps_suppKey:{
+    ps_suppkey:{
         type:Number,
         index:true
     },

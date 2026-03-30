@@ -161,9 +161,9 @@ async function loadLineitems(filePath){
             l_tax: Number(l_tax),
             l_returnflag,
             l_linestatus,
-            l_shipdate,
-            l_commitdate,
-            l_receiptdate,
+            l_shipdate: new Date(l_shipdate),
+            l_commitdate: new Date(l_commitdate),
+            l_receiptdate: new Date(l_receiptdate),
             l_shipinstruct,
             l_shipmode,
             l_comment
@@ -195,7 +195,7 @@ async function loadPartsupps(filePath){
                                                   ps_comment
                                               ]) => ({
                 _id: ps_partKey + "|" + ps_suppKey,
-                ps_partKey: Number(ps_suppKey),
+                ps_partkey: Number(ps_partKey),
                 ps_suppkey: Number(ps_suppKey),
                 ps_availqty: Number(ps_availqty),
                 ps_supplycost: Number(ps_supplycost),
