@@ -11,8 +11,8 @@ namespace MongoDBEntities.Models.TPC_H
         [BsonId]
         public string ps_id { get; set; }
         
-        public int ps_partKey;
-        public int ps_suppKey;
+        public int ps_partkey;
+        public int ps_suppkey;
 
         public int ps_availqty;
         public double ps_supplycost;
@@ -28,11 +28,11 @@ namespace MongoDBEntities.Models.TPC_H
             )
         { }
 
-        public PartsuppR(int ps_partKey, int ps_suppKey, int ps_availqty, double ps_supplycost, string ps_comment)
+        public PartsuppR(int ps_partkey, int ps_suppkey, int ps_availqty, double ps_supplycost, string ps_comment)
         {
-            this.ps_id = ps_partKey.ToString() + "|" + ps_suppKey.ToString();
-            this.ps_partKey = ps_partKey;
-            this.ps_suppKey = ps_suppKey;
+            this.ps_id = ps_partkey.ToString() + "|" + ps_suppkey.ToString();
+            this.ps_partkey = ps_partkey;
+            this.ps_suppkey = ps_suppkey;
             this.ps_availqty = ps_availqty;
             this.ps_supplycost = ps_supplycost;
             this.ps_comment = ps_comment;
