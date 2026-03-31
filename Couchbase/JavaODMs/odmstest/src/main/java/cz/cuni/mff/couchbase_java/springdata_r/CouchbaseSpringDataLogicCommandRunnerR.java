@@ -34,24 +34,33 @@ public class CouchbaseSpringDataLogicCommandRunnerR {
                           OrdersRRepository ordersRRepository,
                           CustomerROrdersRRepository customerROrdersRRepository) {
         return args -> {
-/*
-            Bucket bucket = cluster.bucket("spring_bucket_r");
 
+            Bucket bucket = cluster.bucket("spring_bucket_r");
+/*
             // Create Scope
             SpringDataCouchbaseClusterManagement.createScope("spring_scope_r", bucket);
 
             // Create Collections
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_r", "RegionR", bucket);
+
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_r", "NationR", bucket);
+
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_r", "CustomerR", bucket);
+
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_r", "OrdersR", bucket);
+
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_r", "LineitemR", bucket);
+
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_r", "PartsuppR", bucket);
+
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_r", "SupplierR", bucket);
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_r", "PartR", bucket);
 
 
             // Create Indexes
+
+            SpringDataCouchbaseClusterManagement.createIndex(cluster, "spring_bucket_r", "spring_scope_r", "NationR", "n_regionkey");
+
             SpringDataCouchbaseClusterManagement.createIndex(cluster, "spring_bucket_r", "spring_scope_r", "SupplierR", "s_nationkey");
 
             SpringDataCouchbaseClusterManagement.createIndex(cluster, "spring_bucket_r", "spring_scope_r", "PartsuppR", "ps_suppKey");
@@ -60,10 +69,15 @@ public class CouchbaseSpringDataLogicCommandRunnerR {
             SpringDataCouchbaseClusterManagement.createIndex(cluster, "spring_bucket_r", "spring_scope_r", "OrdersR", "o_custkey");
 
             SpringDataCouchbaseClusterManagement.createIndex(cluster, "spring_bucket_r", "spring_scope_r", "CustomerR", "c_nationkey");
-*/
+
+            SpringDataCouchbaseClusterManagement.createIndex(cluster, "spring_bucket_r", "spring_scope_r", "OrdersR", "o_orderkey_field");
+
+            SpringDataCouchbaseClusterManagement.createIndex(cluster, "spring_bucket_r", "spring_scope_r", "LineitemR", "l_orderkey");
+            SpringDataCouchbaseClusterManagement.createIndex(cluster, "spring_bucket_r", "spring_scope_r", "LineitemR", "l_ps_id");
+            SpringDataCouchbaseClusterManagement.createIndex(cluster, "spring_bucket_r", "spring_scope_r", "LineitemR", "l_partkey");
+            SpringDataCouchbaseClusterManagement.createIndex(cluster, "spring_bucket_r", "spring_scope_r", "LineitemR", "l_suppkey");
 
 
-/*
             // Insert Regions
             TPCHDatasetLoaderSpringDataR.loadRegions("..\\..\\..\\dataset\\TPC-H\\tpch-data\\region.tbl", reactiveCouchbaseTemplate);
             System.out.println("RegionRs saved!");
@@ -134,6 +148,14 @@ public class CouchbaseSpringDataLogicCommandRunnerR {
             System.out.println(d1.size());
             System.out.println(d1.get(0).toString());
             System.out.println("Query D1 completed");*/
+
+            System.out.println("Query started:");
+            var res = QueriesSpringDataR.Q2(cluster);
+            for (int i = 0; i < 3; i++) {
+                System.out.println(res.get(i));
+            }
+            System.out.println(res.size());
+
         };
     }
 }

@@ -15,6 +15,8 @@ public class OrdersR {
     @Id
     private int o_orderkey;
 
+    private int o_orderkey_field;
+
     private String o_custkey;
     private String o_orderstatus;
     private String o_totalprice;
@@ -28,6 +30,7 @@ public class OrdersR {
 
     public OrdersR(int o_orderkey, String o_custkey, String o_orderstatus,String o_totalprice, LocalDate o_orderdate, String o_orderpriority, String o_clerk, String o_shippriority,  String o_comment) {
         this.o_orderkey = o_orderkey;
+        this.o_orderkey_field = o_orderkey;
         this.o_custkey = o_custkey;
         this.o_orderstatus = o_orderstatus;
         this.o_orderdate = o_orderdate;

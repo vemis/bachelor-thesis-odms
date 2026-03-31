@@ -53,7 +53,7 @@ public class TPCHDatasetLoaderSpringDataR extends TPCHDatasetLoader {
             NationR nation = new NationR(
                     Integer.parseInt(row[0]),
                     row[1],
-                    Integer.parseInt(row[2]),
+                    row[2],
                     row[3]
             );
             //reactiveCouchbaseTemplate.save(nation);
@@ -77,7 +77,7 @@ public class TPCHDatasetLoaderSpringDataR extends TPCHDatasetLoader {
                     Integer.parseInt(row[0]),
                     row[1],
                     row[2],
-                    Integer.parseInt(row[3]),
+                    row[3],
                     row[4],
                     Double.parseDouble(row[5]),
                     row[6],
@@ -136,7 +136,7 @@ public class TPCHDatasetLoaderSpringDataR extends TPCHDatasetLoader {
 
         List<String[]> lineitems = readDataFromCustomSeparator(filePath);
 
-        lineitems = lineitems.subList(1_000_000 ,lineitems.size());
+        //lineitems = lineitems.subList(0 ,1_000_000);
 
         LongAdder counter = new LongAdder();
         int total = lineitems.size();
@@ -163,9 +163,9 @@ public class TPCHDatasetLoaderSpringDataR extends TPCHDatasetLoader {
                             Double.parseDouble(row[7]),
                             row[8],
                             row[9],
-                            row[10],
-                            row[11],
-                            row[12],
+                            LocalDate.parse(row[10]),
+                            LocalDate.parse(row[11]),
+                            LocalDate.parse(row[12]),
                             row[13],
                             row[14],
                             row[15]
@@ -207,8 +207,8 @@ public class TPCHDatasetLoaderSpringDataR extends TPCHDatasetLoader {
 
                     return new PartsuppR(
                             //row[0] + "|" + row[1],
-                            Integer.parseInt(row[0]),
-                            Integer.parseInt(row[1]),
+                            row[0],
+                            row[1],
                             Integer.parseInt(row[2]),
                             Double.parseDouble(row[3]),
                             row[4]

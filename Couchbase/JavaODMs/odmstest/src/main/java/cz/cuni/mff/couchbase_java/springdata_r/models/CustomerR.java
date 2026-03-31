@@ -15,7 +15,7 @@ public class CustomerR {
     private String c_name;
     private String c_address;
 
-    private int c_nationkey;
+    private String c_nationkey;
     private String c_phone;
     private double c_acctbal;
     private String c_mktsegment;
@@ -26,7 +26,7 @@ public class CustomerR {
     public CustomerR(int c_custkey,
                      String c_name,
                      String c_address,
-                     int c_nationkey,
+                     String c_nationkey,
                      String c_phone,
                      double c_acctbal,
                      String c_mktsegment,

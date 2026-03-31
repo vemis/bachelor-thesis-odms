@@ -42,6 +42,7 @@ public class CouchbaseConfigR extends AbstractCouchbaseConfiguration {
     @Override
     protected void configureEnvironment(final ClusterEnvironment.Builder builder) {
         builder.timeoutConfig().queryTimeout(Duration.ofMinutes(5));
+        builder.timeoutConfig().kvTimeout(Duration.ofMinutes(5));
         //builder.transactionsConfig(
         //        TransactionsConfig.builder().timeout(Duration.ofSeconds(30)));
     }
