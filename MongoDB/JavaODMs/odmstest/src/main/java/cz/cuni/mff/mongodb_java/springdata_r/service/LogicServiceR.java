@@ -88,6 +88,10 @@ public class LogicServiceR {
         return QueriesSpringDataR.E2(mongoTemplate);
     }
 
+    public List<Document> E3(){
+        return QueriesSpringDataR.E3(mongoTemplate);
+    }
+
     public List<Document> Q1(){
         return QueriesSpringDataR.Q1(mongoTemplate);
     }

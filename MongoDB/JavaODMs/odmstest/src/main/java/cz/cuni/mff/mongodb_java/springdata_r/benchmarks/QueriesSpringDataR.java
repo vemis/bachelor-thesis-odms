@@ -629,6 +629,43 @@ public class QueriesSpringDataR {
         return mongoTemplate.find(query, OrdersR.class);
     }
 
+    /**
+     * ### E3) Distinct
+     *
+     * This query selects distinct nation keys and market segments from the customer table
+     * ```sql
+     * SELECT DISTINCT c_nationkey, c_mktsegment
+     * FROM customer;
+     * ```
+     * @param mongoTemplate
+     * @return
+     */
+    public static List<Document> E3(MongoTemplate mongoTemplate) {
+
+        // group by both fields (DISTINCT)
+        GroupOperation groupOperation = group("c_nationkey", "c_mktsegment");
+
+        // reshape output
+        ProjectionOperation projection = project()
+                .and("_id.c_nationkey").as("c_nationkey")
+                .and("_id.c_mktsegment").as("c_mktsegment")
+                .andExclude("_id");
+
+        Aggregation aggregation = newAggregation(
+                groupOperation,
+                projection
+        );
+
+        AggregationResults<Document> results =
+                mongoTemplate.aggregate(
+                        aggregation,
+                        CustomerR.class,
+                        Document.class
+                );
+
+        return results.getMappedResults();
+    }
+
 
     /**
      * ## Advanced Queries
