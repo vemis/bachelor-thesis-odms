@@ -43,7 +43,7 @@ async function loadNations(filePath){
             r_comment
         }));
 
-        console.log(rowsOfSchemas)
+        //console.log(rowsOfSchemas)
 
         await insertAll(rowsOfSchemas, NationR);
 
@@ -76,7 +76,7 @@ async function loadCustomers(filePath){
             })
         );
 
-        const rowsOfSchemasBatches = partition(rowsOfSchemas, 5_000);
+        const rowsOfSchemasBatches = partition(rowsOfSchemas, 2_500);
 
         for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
             await insertAll(rowsOfSchemasBatches[i], CustomerR);
@@ -104,9 +104,10 @@ async function loadOrders(filePath){
                  o_comment
                  ]) => ({
                     id,
+                    o_orderkey_field: Number(id),
                     o_custkey,
                     o_orderstatus,
-                    o_totalprice,
+                    o_totalprice: Number(o_totalprice),
                     o_orderdate: new Date(o_orderdate),
                     o_orderpriority,
                     o_clerk,
@@ -115,7 +116,7 @@ async function loadOrders(filePath){
                 })
         );
 
-        const rowsOfSchemasBatches = partition(rowsOfSchemas, 5_000);
+        const rowsOfSchemasBatches = partition(rowsOfSchemas, 2_500);
 
         for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
             await insertAll(rowsOfSchemasBatches[i], OrdersR);
@@ -161,16 +162,16 @@ async function loadLineitems(filePath){
             l_tax: Number(l_tax),
             l_returnflag,
             l_linestatus,
-            l_shipdate,
-            l_commitdate,
-            l_receiptdate,
+            l_shipdate: new Date(l_shipdate),
+            l_commitdate: new Date(l_commitdate),
+            l_receiptdate: new Date(l_receiptdate),
             l_shipinstruct,
             l_shipmode,
             l_comment
             })
         );
 
-        const rowsOfSchemasBatches = partition(rowsOfSchemas, 5_000);
+        const rowsOfSchemasBatches = partition(rowsOfSchemas, 2_500);
 
         for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
             await insertAll(rowsOfSchemasBatches[i], LineitemR);
@@ -203,7 +204,7 @@ async function loadPartsupps(filePath){
             })
         );
 
-        const rowsOfSchemasBatches = partition(rowsOfSchemas, 5_000);
+        const rowsOfSchemasBatches = partition(rowsOfSchemas, 2_500);
 
         for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
             await insertAll(rowsOfSchemasBatches[i], PartsuppR);
@@ -243,7 +244,7 @@ async function loadSuppliers(filePath){
             })
         );
 
-        const rowsOfSchemasBatches = partition(rowsOfSchemas, 5_000);
+        const rowsOfSchemasBatches = partition(rowsOfSchemas, 2_500);
 
         for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
             await insertAll( rowsOfSchemasBatches[i], SupplierR );
@@ -283,7 +284,7 @@ async function loadParts(filePath){
             })
         );
 
-        const rowsOfSchemasBatches = partition(rowsOfSchemas, 5_000);
+        const rowsOfSchemasBatches = partition(rowsOfSchemas, 2_500);
 
         for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
             await insertAll( rowsOfSchemasBatches[i], PartR );

@@ -5,9 +5,10 @@ import { Schema, model } from 'ottoman';
 const OrdersRSchema = new Schema({
     //o_orderkey
     id: String,
+    o_orderkey_field: Number,
     o_custkey: String,
     o_orderstatus:String,
-    o_totalprice:String,
+    o_totalprice:Number,
     o_orderdate: Date,
     o_orderpriority:String,
     o_clerk:String,
@@ -17,6 +18,11 @@ const OrdersRSchema = new Schema({
 
 OrdersRSchema.index.findBy_o_custkey = {
     by: "o_custkey",
+    type: 'n1ql',
+};
+
+OrdersRSchema.index.findBy_o_orderkey_field = {
+    by: "o_orderkey_field",
     type: 'n1ql',
 };
 

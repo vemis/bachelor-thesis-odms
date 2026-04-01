@@ -19,9 +19,9 @@ const LineitemRSchema = new Schema({
     l_tax: Number,
     l_returnflag: String,
     l_linestatus: String,
-    l_shipdate: String,
-    l_commitdate: String,
-    l_receiptdate: String,
+    l_shipdate: Date,
+    l_commitdate: Date,
+    l_receiptdate: Date,
     l_shipinstruct: String,
     l_shipmode: String,
     l_comment: String

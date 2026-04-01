@@ -42,10 +42,10 @@ async function run() {
 
     await loadDataTPCHR.loadCustomers("..\\..\\..\\dataset\\TPC-H\\tpch-data\\customer.tbl")
     console.log("Customers loaded")
-
+*/
     await loadDataTPCHR.loadOrders("..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl")
     console.log("Orders loaded");
-
+/
     console.log("Loading Lineitems")
     await loadDataTPCHR.loadLineitems("..\\..\\..\\dataset\\TPC-H\\tpch-data\\lineitem.tbl")
     console.log("Lineitems loaded");
@@ -61,7 +61,7 @@ async function run() {
     console.log("Loading Parts")
     await loadDataTPCHR.loadParts("..\\..\\..\\dataset\\TPC-H\\tpch-data\\part.tbl")
     console.log("Parts loaded")
-*/
+
 
     //const a2 = await queriesR.A2();
     //console.log(a2.length)
@@ -73,14 +73,20 @@ async function run() {
     /*onsole.log(
         await queriesR.A2()
     )*/
-    benchmarkQuery(
+    /*benchmarkQuery(
         queriesR.A1,
         queriesR.A2,
         queriesR.B1,
         queriesR.C2,
         queriesR.D1
-    )
-
+    )*/
+/*
+    const res = await queriesR.C5();
+    for (let i = 0; i < 3; i++) {
+        console.log(res[i])
+    }
+    console.log(res.length)
+*/
 }
 
 run().catch(err => console.error(err));

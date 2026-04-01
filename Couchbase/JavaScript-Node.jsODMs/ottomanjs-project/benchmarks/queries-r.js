@@ -2,6 +2,7 @@ import {LineitemR} from "../models/tpc_h_r/lineitem-r.js";
 import {OrdersR} from "../models/tpc_h_r/orders-r.js";
 import {RegionR} from "../models/tpc_h_r/region-r.js";
 import ottoman, {getDefaultInstance, Query} from "ottoman";
+import {CustomerR} from "../models/tpc_h_r/customer-r.js";
 
 
 /**
@@ -47,6 +48,43 @@ async function A2(){
 }
 
 /**
+ *
+ ### A3) Indexed Columns
+
+ This query selects all records from the customer table
+ ```sql
+ SELECT * FROM customer;
+ ```
+ */
+async function A3(){
+    const a3 = await CustomerR.find({} );
+
+    return a3.rows;
+}
+
+/**
+ * ### A4) Indexed Columns — Range Query
+ *
+ * This query selects all records from the orders table where the order key is between 1000 and 50000
+ * ```sql
+ * SELECT * FROM orders
+ * WHERE o_orderkey BETWEEN 1000 AND 50000;
+ * ```
+ * @returns {Promise<TRow[]|any[]|TRow[]|TRow[]|ViewRow<TKey, TValue>[]|string[]|CppSearchResponseSearchRow[]|CppDocumentViewResponseRow[]|string|HTMLCollectionOf<HTMLTableRowElement>|number|SQLResultSetRowList>}
+ * @constructor
+ */
+async function A4(){
+
+    const a4 = await OrdersR.find({
+        $or: [{
+            o_orderkey_field: { $btw: [1000, 50000] }
+        }]
+    });
+
+    return a4.rows;
+}
+
+/**
  * ### B1) COUNT
  *
  * This query counts the number of orders grouped by order month
@@ -72,6 +110,34 @@ async function B1() {
     return b1.rows;
 }
 
+async function B2() {
+
+    const b2 = await ottoman.getDefaultInstance()
+        .query(
+            `SELECT DATE_FORMAT_STR(l.l_shipdate, "%Y-%m") AS ship_month,
+                    MAX(l.l_extendedprice)                 AS max_price
+             FROM \`ottoman_bucket_r\`.\`ottoman_scope_r\`.\`LineitemR\` AS l
+             GROUP BY DATE_FORMAT_STR(l.l_shipdate, "%Y-%m");`
+        );
+
+    return b2.rows;
+}
+
+/**
+ * ### C1) Non-Indexed Columns
+ *
+ * This query gives customer names, order dates, and total prices for customers
+ * ```sql
+ * SELECT c.c_name, o.o_orderdate, o.o_totalprice
+ * FROM customer c, orders o;
+ * ```
+ * @returns {Promise<any[]>}
+ * @constructor
+ */
+async function C1(){
+    throw new Error("Not possible to implement in Couchbase")
+}
+
 /**
  * ### C2) Indexed Columns
  *
@@ -95,6 +161,81 @@ async function C2(){
     );
 
     return c2.rows;
+}
+
+/**
+ * ### C3) Complex Join 1
+ *
+ * This query gives customer names, nation names, order dates, and total prices for customers
+ * ```sql
+ * SELECT c.c_name, n.n_name, o.o_orderdate, o.o_totalprice
+ * FROM customer c
+ * JOIN nation n ON c.c_nationkey = n.n_nationkey
+ * JOIN orders o ON c.c_custkey = o.o_custkey;
+ * ```
+ * @returns {Promise<any[]>}
+ * @constructor
+ */
+async function C3(){
+
+    const c3 = await ottoman.getDefaultInstance()
+        .query(
+            `SELECT c.c_name, n.n_name, o.o_orderdate, o.o_totalprice
+             FROM \`ottoman_bucket_r\`.\`ottoman_scope_r\`.\`CustomerR\` AS c
+                      JOIN \`ottoman_bucket_r\`.\`ottoman_scope_r\`.\`NationR\` AS n
+                           ON c.c_nationkey = META(n).id
+                      JOIN \`ottoman_bucket_r\`.\`ottoman_scope_r\`.\`OrdersR\` AS o
+                           ON META(c).id = o.o_custkey;`
+
+        );
+
+    return c3.rows;
+}
+
+/**
+ * ### C4) Complex Join 2
+ *
+ * This query gives customer names, nation names, region names, order dates, and total prices for customers
+ * ```sql
+ * SELECT c.c_name, n.n_name, r.r_name, o.o_orderdate, o.o_totalprice
+ * FROM customer c
+ * JOIN nation n ON c.c_nationkey = n.n_nationkey
+ * JOIN region r ON n.n_regionkey = r.r_regionkey
+ * JOIN orders o ON c.c_custkey = o.o_custkey;
+ * ```
+ * @returns {Promise<any[]>}
+ * @constructor
+ */
+async function C4(){
+
+    const c4 = await ottoman.getDefaultInstance()
+        .query(
+            `SELECT c.c_name, n.n_name, r.r_name, o.o_orderdate, o.o_totalprice
+             FROM \`ottoman_bucket_r\`.\`ottoman_scope_r\`.\`CustomerR\` AS c
+                      JOIN \`ottoman_bucket_r\`.\`ottoman_scope_r\`.\`NationR\` AS n
+                           ON c.c_nationkey = META(n).id
+                      JOIN \`ottoman_bucket_r\`.\`ottoman_scope_r\`.\`RegionR\` AS r
+                           ON n.n_regionkey = META(r).id
+                      JOIN \`ottoman_bucket_r\`.\`ottoman_scope_r\`.\`OrdersR\` AS o
+                           ON META(c).id = o.o_custkey;`
+
+        );
+
+    return c4.rows;
+}
+
+async function C5(){
+
+    const c5 = await ottoman.getDefaultInstance()
+        .query(
+            `SELECT META(c).id AS c_custkey, c.c_name, META(o).id AS o_orderkey, o.o_orderdate
+             FROM \`ottoman_bucket_r\`.\`ottoman_scope_r\`.\`CustomerR\` AS c
+                      LEFT JOIN \`ottoman_bucket_r\`.\`ottoman_scope_r\`.\`OrdersR\` AS o
+                                ON META(c).id = o.o_custkey;`
+
+        );
+
+    return c5.rows;
 }
 
 /**
@@ -126,7 +267,14 @@ async function D1(){
 export {
     A1,
     A2,
+    A3,
+    A4,
     B1,
+    B2,
+    C1,
     C2,
+    C3,
+    C4,
+    C5,
     D1
 }
