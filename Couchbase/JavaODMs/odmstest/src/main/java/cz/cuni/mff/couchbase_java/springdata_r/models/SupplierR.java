@@ -15,7 +15,7 @@ public class SupplierR {
     private String s_name;
     private String s_address;
     //@Indexed
-    private int s_nationkey;
+    private String s_nationkey;
     private String s_phone;
     private double s_acctbal;
 
@@ -23,7 +23,7 @@ public class SupplierR {
 
     public SupplierR() {}
 
-    public SupplierR(int s_suppkey, String s_name, String s_address, int s_nationkey, String s_phone, double s_acctbal, String s_comment) {
+    public SupplierR(int s_suppkey, String s_name, String s_address, String s_nationkey, String s_phone, double s_acctbal, String s_comment) {
         this.s_suppkey = s_suppkey;
         this.s_name = s_name;
         this.s_address = s_address;

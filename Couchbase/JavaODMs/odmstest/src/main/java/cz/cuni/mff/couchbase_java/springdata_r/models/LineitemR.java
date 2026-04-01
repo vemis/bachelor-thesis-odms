@@ -19,11 +19,11 @@ public class LineitemR {
     @Id
     private String l_id;
     //@Indexed
-    private int l_orderkey;
+    private String l_orderkey;
     //@Indexed
-    private int l_partkey;
+    private String l_partkey;
     //@Indexed
-    private int l_suppkey;
+    private String l_suppkey;
     //@Indexed
     private String l_ps_id;
 
@@ -51,9 +51,9 @@ public class LineitemR {
 
     public LineitemR() {}
 
-    public LineitemR(int l_orderkey, int l_partkey, int l_suppkey, int l_linenumber, int l_quantity, double l_extendedprice, double l_discount, double l_tax, String l_returnflag, String l_linestatus, LocalDate l_shipdate, LocalDate l_commitdate, LocalDate l_receiptdate, String l_shipinstruct, String l_shipmode, String l_comment) {
-        this.l_ps_id = Integer.toString(l_partkey) + "|" + Integer.toString(l_suppkey);
-        this.l_id = Integer.toString(l_orderkey) + Integer.toString(l_linenumber);
+    public LineitemR(String l_orderkey, String l_partkey, String l_suppkey, int l_linenumber, int l_quantity, double l_extendedprice, double l_discount, double l_tax, String l_returnflag, String l_linestatus, LocalDate l_shipdate, LocalDate l_commitdate, LocalDate l_receiptdate, String l_shipinstruct, String l_shipmode, String l_comment) {
+        this.l_ps_id = l_partkey + "|" + l_suppkey;
+        this.l_id = l_orderkey + Integer.toString(l_linenumber);
         this.l_orderkey = l_orderkey;
         //this.l_ps_id = l_ps_id;
 

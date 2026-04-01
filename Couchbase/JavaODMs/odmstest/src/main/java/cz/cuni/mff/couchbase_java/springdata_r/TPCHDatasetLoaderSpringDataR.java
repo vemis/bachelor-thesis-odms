@@ -153,9 +153,9 @@ public class TPCHDatasetLoaderSpringDataR extends TPCHDatasetLoader {
                     }
 
                     return new LineitemR(
-                            Integer.parseInt(row[0]),
-                            Integer.parseInt(row[1]),
-                            Integer.parseInt(row[2]),
+                            row[0],
+                            row[1],
+                            row[2],
                             Integer.parseInt(row[3]),
                             Integer.parseInt(row[4]),
                             Double.parseDouble(row[5]),
@@ -296,7 +296,7 @@ public class TPCHDatasetLoaderSpringDataR extends TPCHDatasetLoader {
                             Integer.parseInt(row[0]),
                             row[1],
                             row[2],
-                            Integer.parseInt(row[3]),
+                            row[3],
                             row[4],
                             Double.parseDouble(row[5]),
                             row[6]
