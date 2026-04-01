@@ -54,6 +54,7 @@ public class CouchbaseSpringDataLogicCommandRunnerR {
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_r", "PartsuppR", bucket);
 
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_r", "SupplierR", bucket);
+
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_r", "PartR", bucket);
 
 
@@ -115,6 +116,7 @@ public class CouchbaseSpringDataLogicCommandRunnerR {
             // Insert Suppliers
             TPCHDatasetLoaderSpringDataR.loadSuppliers("..\\..\\..\\dataset\\TPC-H\\tpch-data\\supplier.tbl", reactiveCouchbaseTemplate);
             System.out.println("supplierRs saved!");
+
 */
             // Queries
             /*System.out.println("Query A1:");
@@ -150,7 +152,7 @@ public class CouchbaseSpringDataLogicCommandRunnerR {
             System.out.println("Query D1 completed");*/
 
             System.out.println("Query started:");
-            var res = QueriesSpringDataR.Q2(cluster);
+            var res = QueriesSpringDataR.Q5(cluster);
             for (int i = 0; i < 3; i++) {
                 System.out.println(res.get(i));
             }

@@ -171,7 +171,9 @@ public class QueriesSpringDataR {
      * FROM customer c, orders o;
      * ```
      */
-    public static List<JsonObject> C1(Cluster cluster){
+    public static List<JsonObject> C1(Cluster cluster) throws Exception {
+        throw new Exception("Not possible to implement in Couchbase");
+        /*
         String query =
                 """
                 SELECT c.c_name, o.o_orderdate, o.o_totalprice
@@ -182,6 +184,7 @@ public class QueriesSpringDataR {
         return cluster
                 .query(query)
                 .rowsAsObject();
+                */
     }
 
     /**
@@ -543,6 +546,38 @@ public class QueriesSpringDataR {
      * @return
      */
     public static List<JsonObject> Q2(Cluster cluster){
+        /**
+         * True translation would be this query, but because of the Couchbase subquery 1000 documents limit
+         * SELECT
+         *      s.s_acctbal,
+         *      s.s_name,
+         *      n.n_name,
+         *      p.p_partkey,
+         *      p.p_mfgr,
+         *      s.s_address,
+         *      s.s_phone,
+         *      s.s_comment FROM spring_bucket_r.spring_scope_r.PartR AS p
+         * JOIN spring_bucket_r.spring_scope_r.PartsuppR AS ps
+         * ON META(p).id = ps.ps_partkey
+         * JOIN spring_bucket_r.spring_scope_r.SupplierR AS s
+         * ON META(s).id = ps.ps_suppkey
+         * JOIN spring_bucket_r.spring_scope_r.NationR AS n
+         * ON s.s_nationkey = META(n).id
+         * JOIN spring_bucket_r.spring_scope_r.RegionR AS r
+         * ON n.n_regionkey = META(r).id WHERE p.p_size = 15
+         * AND p.p_type LIKE '%BRASS'
+         * AND r.r_name = 'EUROPE'
+         * AND ps.ps_supplycost =
+         * ( SELECT MIN(ps_inner.ps_supplycost) FROM spring_bucket_r.spring_scope_r.PartsuppR AS ps_inner
+         * JOIN spring_bucket_r.spring_scope_r.SupplierR AS s_inner
+         * ON META(s_inner).id = ps_inner.ps_suppkey JOIN spring_bucket_r.spring_scope_r.NationR AS n_inner
+         * ON s_inner.s_nationkey = META(n_inner).id JOIN spring_bucket_r.spring_scope_r.RegionR AS r_inner
+         * ON n_inner.n_regionkey = META(r_inner).id
+         * WHERE ps_inner.ps_partkey = META(p).id
+         * AND r_inner.r_name = 'EUROPE' )
+         * ORDER BY s.s_acctbal DESC, n.n_name, s.s_name, META(p).id;
+         */
+
         String query =
                 """
                         SELECT
@@ -557,6 +592,21 @@ public class QueriesSpringDataR {
                         FROM `spring_bucket_r`.`spring_scope_r`.`PartR` AS p
                         JOIN `spring_bucket_r`.`spring_scope_r`.`PartsuppR` AS ps
                           ON META(p).id = ps.ps_partkey
+                        JOIN (
+                            SELECT ps_inner.ps_partkey,
+                                   MIN(ps_inner.ps_supplycost) AS min_supplycost
+                            FROM `spring_bucket_r`.`spring_scope_r`.`PartsuppR` AS ps_inner
+                            JOIN `spring_bucket_r`.`spring_scope_r`.`SupplierR` AS s_inner
+                              ON META(s_inner).id = ps_inner.ps_suppkey
+                            JOIN `spring_bucket_r`.`spring_scope_r`.`NationR` AS n_inner
+                              ON s_inner.s_nationkey = META(n_inner).id
+                            JOIN `spring_bucket_r`.`spring_scope_r`.`RegionR` AS r_inner
+                              ON n_inner.n_regionkey = META(r_inner).id
+                            WHERE r_inner.r_name = 'EUROPE'
+                            GROUP BY ps_inner.ps_partkey
+                        ) AS minps
+                          ON ps.ps_partkey = minps.ps_partkey
+                         AND ps.ps_supplycost = minps.min_supplycost
                         JOIN `spring_bucket_r`.`spring_scope_r`.`SupplierR` AS s
                           ON META(s).id = ps.ps_suppkey
                         JOIN `spring_bucket_r`.`spring_scope_r`.`NationR` AS n
@@ -566,19 +616,7 @@ public class QueriesSpringDataR {
                         WHERE p.p_size = 15
                           AND p.p_type LIKE '%BRASS'
                           AND r.r_name = 'EUROPE'
-                          AND ps.ps_supplycost = (
-                            SELECT MIN(ps_inner.ps_supplycost)
-                            FROM `spring_bucket_r`.`spring_scope_r`.`PartsuppR` AS ps_inner
-                            JOIN `spring_bucket_r`.`spring_scope_r`.`SupplierR` AS s_inner
-                              ON META(s_inner).id = ps_inner.ps_suppkey
-                            JOIN `spring_bucket_r`.`spring_scope_r`.`NationR` AS n_inner
-                              ON s_inner.s_nationkey = META(n_inner).id
-                            JOIN `spring_bucket_r`.`spring_scope_r`.`RegionR` AS r_inner
-                              ON n_inner.n_regionkey = META(r_inner).id
-                            WHERE ps_inner.ps_partkey = META(p).id
-                              AND r_inner.r_name = 'EUROPE'
-                          )
-                        ORDER BY s.s_acctbal DESC, n.n_name, s.s_name, p.p_partkey;""";
+                        ORDER BY s.s_acctbal DESC, n.n_name, s.s_name, META(p).id;""";
 
         return cluster
                 .query(query)
@@ -618,7 +656,23 @@ public class QueriesSpringDataR {
      */
     public static List<JsonObject> Q3(Cluster cluster){
         String query =
-                """
+                        """
+                        SELECT
+                          META(o).id AS l_orderkey,
+                          SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue,
+                          o.o_orderdate,
+                          o.o_shippriority
+                        FROM `spring_bucket_r`.`spring_scope_r`.`CustomerR` AS c
+                        JOIN `spring_bucket_r`.`spring_scope_r`.`OrdersR` AS o
+                          ON META(c).id = o.o_custkey
+                        JOIN `spring_bucket_r`.`spring_scope_r`.`LineitemR` AS l
+                          ON META(o).id = l.l_orderkey
+                        WHERE c.c_mktsegment = 'BUILDING'
+                          AND o.o_orderdate < MILLIS('1995-03-15')
+                          AND l.l_shipdate > MILLIS('1995-03-15')
+                        GROUP BY META(o).id, o.o_orderdate, o.o_shippriority
+                        ORDER BY revenue DESC, o.o_orderdate
+                        LIMIT 10;
                         """;
 
         return cluster
@@ -658,6 +712,19 @@ public class QueriesSpringDataR {
     public static List<JsonObject> Q4(Cluster cluster){
         String query =
                 """
+                        SELECT
+                          o.o_orderpriority,
+                          COUNT(DISTINCT META(o).id) AS order_count
+                        FROM `spring_bucket_r`.`spring_scope_r`.`OrdersR` AS o
+                        JOIN `spring_bucket_r`.`spring_scope_r`.`LineitemR` AS l
+                          ON META(o).id = l.l_orderkey
+                        LET start_date = MILLIS('1993-07-01'),
+                            end_date = MILLIS(DATE_ADD_STR('1993-07-01', 3, 'month'))
+                        WHERE o.o_orderdate >= start_date
+                          AND o.o_orderdate < end_date
+                          AND l.l_commitdate < l.l_receiptdate
+                        GROUP BY o.o_orderpriority
+                        ORDER BY o.o_orderpriority;
                         """;
 
         return cluster
@@ -701,6 +768,28 @@ public class QueriesSpringDataR {
     public static List<JsonObject> Q5(Cluster cluster){
         String query =
                 """
+                        SELECT
+                          n.n_name,
+                          SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue
+                        FROM `spring_bucket_r`.`spring_scope_r`.`CustomerR` AS c
+                        JOIN `spring_bucket_r`.`spring_scope_r`.`OrdersR` AS o
+                          ON META(c).id = o.o_custkey
+                        JOIN `spring_bucket_r`.`spring_scope_r`.`LineitemR` AS l
+                          ON META(o).id = l.l_orderkey
+                        JOIN `spring_bucket_r`.`spring_scope_r`.`SupplierR` AS s
+                          ON META(s).id = l.l_suppkey
+                        JOIN `spring_bucket_r`.`spring_scope_r`.`NationR` AS n
+                          ON s.s_nationkey = META(n).id
+                        JOIN `spring_bucket_r`.`spring_scope_r`.`RegionR` AS r
+                          ON n.n_regionkey = META(r).id
+                        LET start_date = MILLIS('1994-01-01'),
+                            end_date = MILLIS(DATE_ADD_STR('1994-01-01', 1, 'year'))
+                        WHERE c.c_nationkey = s.s_nationkey
+                          AND r.r_name = 'ASIA'
+                          AND o.o_orderdate >= start_date
+                          AND o.o_orderdate < end_date
+                        GROUP BY n.n_name
+                        ORDER BY revenue DESC;
                         """;
 
         return cluster
