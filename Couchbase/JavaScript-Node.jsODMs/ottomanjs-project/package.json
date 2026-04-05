@@ -8,6 +8,7 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "benchmark": "^2.1.4",
     "couchbase": "^4.6.0",
     "ottoman": "^2.5.3"
   }

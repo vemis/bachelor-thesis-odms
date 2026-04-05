@@ -7,21 +7,21 @@ const PartsuppRSchema = new Schema({
     //@Id private String ps_id;
     id: String,
     
-    ps_partKey: String,
-    ps_suppKey: String,
+    ps_partkey: String,
+    ps_suppkey: String,
 
     ps_availqty: Number,
     ps_supplycost: Number,
     ps_comment: String
 });
 
-PartsuppRSchema.index.findBy_ps_partKey = {
-    by: "ps_partKey",
+PartsuppRSchema.index.findBy_ps_partkey = {
+    by: "ps_partkey",
     type: 'n1ql',
 };
 
-PartsuppRSchema.index.findBy_ps_suppKey = {
-    by: "ps_suppKey",
+PartsuppRSchema.index.findBy_ps_suppkey = {
+    by: "ps_suppkey",
     type: 'n1ql',
 };
 

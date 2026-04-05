@@ -189,15 +189,15 @@ async function loadPartsupps(filePath){
         const rowsOfData = await readDataFromCustomSeparator(filePath)
 
         const rowsOfSchemas = rowsOfData.map(([
-                                                  ps_partKey,
-                                                  ps_suppKey,
+                                                  ps_partkey,
+                                                  ps_suppkey,
                                                   ps_availqty,
                                                   ps_supplycost,
                                                   ps_comment
                                               ]) => ({
-                id: ps_partKey + "|" + ps_suppKey,
-                ps_partKey,
-                ps_suppKey,
+                id: ps_partkey + "|" + ps_suppkey,
+                ps_partkey: ps_partkey,
+                ps_suppkey: ps_suppkey,
                 ps_availqty: Number(ps_availqty),
                 ps_supplycost: Number(ps_supplycost),
                 ps_comment
