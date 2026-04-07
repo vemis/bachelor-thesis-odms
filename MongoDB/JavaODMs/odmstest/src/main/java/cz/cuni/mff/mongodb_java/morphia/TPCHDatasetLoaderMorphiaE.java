@@ -5,17 +5,126 @@ import com.mongodb.client.model.InsertManyOptions;
 import cz.cuni.mff.mongodb_java.TPCHDatasetLoader;
 
 import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.*;
+import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_relational.OrdersR;
 import dev.morphia.Datastore;
-import org.springframework.core.annotation.Order;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
-    public static List<OrdersE> loadOrders(String filePath, Datastore datastore) {
+
+    public static void loadOrdersEWithLineitems(String filePath, List<LineitemE> lineitems ,Datastore datastore) {
+
+        List<String[]> orders = readDataFromCustomSeparator(filePath);
+
+        // LineitemE grouped by l_orderkey
+        Map<Integer, List<LineitemE>> lineitemsMappedBy_l_orderkey = groupByKey(lineitems, LineitemE::get_l_orderkey);
+
+        LongAdder counter = new LongAdder();
+        int total = orders.size();
+
+        List<OrdersEWithLineitems> orderInstances = orders
+                .parallelStream()
+                .map(row ->
+                {
+                    counter.increment();
+                    long current = counter.sum();
+
+                    if (current % 10_000 == 0) {
+                        System.out.println("Processed " + current + " / " + total);
+                    }
+
+                    return new OrdersEWithLineitems(
+                            Integer.parseInt(row[0]),
+                            Integer.parseInt(row[1]),
+                            row[2],
+                            row[4],
+                            LocalDate.parse(row[4]),
+                            row[5],
+                            row[6],
+                            row[7],
+                            row[8],
+                            lineitemsMappedBy_l_orderkey.get( Integer.parseInt(row[0]) )
+                    );
+                })
+                .toList();
+
+        /*
+        // Can be saved like this, but very slow
+        // Disclaimer - datastore.save(List<>...) is not working - the instance is missing the annotation!
+        // Needs to be ArrayList<>
+        */
+
+        // Faster approach, but collection needs to be dropped beforehand!
+        MongoCollection<OrdersEWithLineitems> collection =
+                datastore.getDatabase()
+                        .getCollection("ordersEWithLineitems", OrdersEWithLineitems.class);
+
+        System.out.println("Inserting many ordersEWithLineitemsInstances!");
+        collection.insertMany(orderInstances, new InsertManyOptions().ordered(false));
+
+        System.out.println("ordersEWithLineitems inserted!");
+    }
+
+
+    public static List<LineitemE> createLineitemsE(String filePath, Datastore datastore) {
+
+        List<String[]> lineitems = readDataFromCustomSeparator(filePath);
+
+        LongAdder counter = new LongAdder();
+        int total = lineitems.size();
+
+        List<LineitemE> lineitemInstances = lineitems
+                .parallelStream()
+                .map(row ->
+                {
+                    counter.increment();
+                    long current = counter.sum();
+
+                    if (current % 10_000 == 0) {
+                        System.out.println("Processed " + current + " / " + total);
+                    }
+
+                    return new LineitemE(
+                            Integer.parseInt(row[0]),
+                            Integer.parseInt(row[1]),
+                            Integer.parseInt(row[2]),
+                            Integer.parseInt(row[3]),
+                            Integer.parseInt(row[4]),
+                            Double.parseDouble(row[5]),
+                            Double.parseDouble(row[6]),
+                            Double.parseDouble(row[7]),
+                            row[8],
+                            row[9],
+                            LocalDate.parse(row[10]),
+                            LocalDate.parse( row[11]),
+                            LocalDate.parse(row[12]),
+                            row[13],
+                            row[14],
+                            row[15]
+                    );
+                })
+                //.toArray(LineitemR[]::new);
+                .toList();
+
+        return lineitemInstances;
+    }
+
+    public static <T> Map<Integer, List<T>> groupByKey(List<T> items, Function<T, Integer> keyExtractor) {
+        Map<Integer, List<T>> map = new HashMap<>();
+        for (T item : items) {
+            map.computeIfAbsent(keyExtractor.apply(item), k -> new ArrayList<>()).add(item);
+        }
+        return map;
+    }
+
+    public static List<OrdersE> createOrders(String filePath, Datastore datastore) {
 
         List<String[]> orders = readDataFromCustomSeparator(filePath);
 
@@ -37,7 +146,7 @@ public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
                             Integer.parseInt(row[0]),
                             Integer.parseInt(row[1]),
                             row[2],
-                            row[4],
+                            Double.parseDouble(row[3]),
                             LocalDate.parse(row[4]),
                             row[5],
                             row[6],
@@ -78,7 +187,7 @@ public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
                             row[6],
                             row[7],
                             orders.stream()
-                                    .filter(item -> item.getO_custkey() == Integer.parseInt(row[0]))
+                                    .filter(item -> item.get_o_custkey() == Integer.parseInt(row[0]))
                                     .collect(Collectors.toList())
                     );
                 })
@@ -138,7 +247,7 @@ public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
                             row[6],
                             row[7],
                             orders.stream()
-                                    .filter(item -> item.getO_custkey() == Integer.parseInt(row[0]))
+                                    .filter(item -> item.get_o_custkey() == Integer.parseInt(row[0]))
                                     .collect(Collectors.toList())
                     );
                 })

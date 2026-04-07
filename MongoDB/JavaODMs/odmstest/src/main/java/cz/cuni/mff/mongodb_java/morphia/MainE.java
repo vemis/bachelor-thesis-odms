@@ -38,18 +38,44 @@ public class MainE {
 
         System.out.println("Morphia initialized!");
 
-        var c2 = QueriesMorphiaE.C2(datastore);
-        System.out.println(c2.size());
-        System.out.println(c2.get(0));
+        var res = QueriesMorphiaE.R7(datastore);
+        System.out.println(res.get(0));
+        System.out.println(res.size());
 
-/*
+
+        /*
+        var lineitemsE = TPCHDatasetLoaderMorphiaE.createLineitemsE("..\\..\\..\\dataset\\TPC-H\\tpch-data\\lineitem.tbl", datastore);
+        System.out.println(lineitemsE.size());
+
+        TPCHDatasetLoaderMorphiaE.loadOrdersEWithLineitems("..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl", lineitemsE ,datastore);
+        System.out.println("OrdersEWithLineitems loaded");
+        */
+
+
+        /*
         var orders = TPCHDatasetLoaderMorphiaE.loadOrders("..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl", datastore);
         System.out.println("OrderEs created!");
+        */
 
+        /*
+        ArrayList<Double> totalprices = new ArrayList<>();
+        for(var order : orders){
+            totalprices.add(order.o_totalprice);
+        }
+        Collections.sort(totalprices);
+        for (int i = 0; i < 5; i++) {
+            System.out.println(i + " - " + totalprices.get(i));
+        }
+        System.out.println(totalprices.get(  totalprices.size() / 2    ));
+        System.out.println(totalprices.get(   (int)(totalprices.size() * 0.9)    ));
+        System.out.println( totalprices.size() );
+        */
+
+        /*
         // Create Customers
         TPCHDatasetLoaderMorphiaE.loadCustomersEWithOrders("..\\..\\..\\dataset\\TPC-H\\tpch-data\\customer.tbl", orders ,datastore);
         System.out.println("CustomerEs created!");
-*/
+        */
 
         /*
         // Create Orders
