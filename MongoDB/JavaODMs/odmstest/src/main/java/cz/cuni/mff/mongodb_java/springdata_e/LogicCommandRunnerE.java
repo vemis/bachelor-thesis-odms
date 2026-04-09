@@ -16,7 +16,19 @@ public class LogicCommandRunnerE {
     @Bean
     CommandLineRunner run(LogicServiceE service) {
         return args -> {
+
+
+            var res = QueriesSpringDataE.R1(mongoTemplate);
+            System.out.println(res.get(0));
+            System.out.println(res.size());
+
 /*
+            var lineitemsE = TPCHDatasetLoaderSpringDataE.createLineitemsE("..\\..\\..\\dataset\\TPC-H\\tpch-data\\lineitem.tbl");
+            System.out.println(lineitemsE.size());
+
+            TPCHDatasetLoaderSpringDataE.loadOrdersEWithLineitems("..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl", lineitemsE, mongoTemplate );
+            System.out.println("OrdersEWithLineitems loaded");
+
             // Create RegionsE
             var ordersE = TPCHDatasetLoaderSpringDataE.loadOrders("..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl");
             System.out.println("OrdersE created");
@@ -25,9 +37,7 @@ public class LogicCommandRunnerE {
             TPCHDatasetLoaderSpringDataE.loadCustomers("..\\..\\..\\dataset\\TPC-H\\tpch-data\\customer.tbl", ordersE ,mongoTemplate);
             System.out.println("CustomersE inserted");
 */
-            /*var c2 = QueriesSpringDataE.C2(mongoTemplate);
-            System.out.println(c2.size());
-            System.out.println(c2.get(0));*/
+
 
 
         };
