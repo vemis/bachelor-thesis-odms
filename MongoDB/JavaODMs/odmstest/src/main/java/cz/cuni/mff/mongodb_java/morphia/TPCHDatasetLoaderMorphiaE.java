@@ -14,6 +14,145 @@ import java.util.stream.Collectors;
 
 public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
 
+    public static void loadOrdersEWithCustomerWithNationWithRegion(
+            String filePathOrders,
+            String filePathCustomers,
+            String filePathNations,
+            String filePathRegions,
+            Datastore datastore) {
+
+        List<String[]> orders = readDataFromCustomSeparator(filePathOrders);
+
+        // Build RegionEOnlyName map keyed by r_regionkey
+        List<String[]> regionRows = readDataFromCustomSeparator(filePathRegions);
+        Map<Integer, RegionEOnlyName> regionMap = new HashMap<>();
+        for (String[] row : regionRows) {
+            int key = Integer.parseInt(row[0]);
+            regionMap.put(key, new RegionEOnlyName(key, row[1]));
+        }
+
+        // Build NationEOnlyNNameNRegion map keyed by n_nationkey
+        List<String[]> nationRows = readDataFromCustomSeparator(filePathNations);
+        Map<Integer, NationEOnlyNNameNRegion> nationMap = new HashMap<>();
+        for (String[] row : nationRows) {
+            int key = Integer.parseInt(row[0]);
+            int regionkey = Integer.parseInt(row[2]);
+            nationMap.put(key, new NationEOnlyNNameNRegion(key, row[1], regionkey, regionMap.get(regionkey)));
+        }
+
+        // Build CustomerEOnlyCNameCNation map keyed by c_custkey
+        List<String[]> customerRows = readDataFromCustomSeparator(filePathCustomers);
+        Map<Integer, CustomerEOnlyCNameCNation> customerMap = new HashMap<>();
+        for (String[] row : customerRows) {
+            int key = Integer.parseInt(row[0]);
+            int nationkey = Integer.parseInt(row[3]);
+            customerMap.put(key, new CustomerEOnlyCNameCNation(key, row[1], nationkey, nationMap.get(nationkey)));
+        }
+
+        LongAdder counter = new LongAdder();
+        int total = orders.size();
+
+        List<OrdersEWithCustomerWithNationWithRegion> orderInstances = orders
+                .parallelStream()
+                .map(row ->
+                {
+                    counter.increment();
+                    long current = counter.sum();
+
+                    if (current % 10_000 == 0) {
+                        System.out.println("Processed " + current + " / " + total);
+                    }
+
+                    return new OrdersEWithCustomerWithNationWithRegion(
+                            Integer.parseInt(row[0]),
+                            LocalDate.parse(row[4]),
+                            customerMap.get(Integer.parseInt(row[1]))
+                    );
+                })
+                .toList();
+
+        MongoCollection<OrdersEWithCustomerWithNationWithRegion> collection =
+                datastore.getDatabase()
+                        .getCollection("ordersEWithCustomerWithNationWithRegion", OrdersEWithCustomerWithNationWithRegion.class);
+
+        System.out.println("Inserting many ordersEWithCustomerWithNationWithRegion!");
+        collection.insertMany(orderInstances, new InsertManyOptions().ordered(false));
+
+        System.out.println("ordersEWithCustomerWithNationWithRegion inserted!");
+    }
+
+    public static List<CustomerEOnlyCNameCNation> createCustomerEOnlyCNameCNation(String filePath, NationEOnlyNNameNRegion nation) {
+
+        List<String[]> customers = readDataFromCustomSeparator(filePath);
+
+        LongAdder counter = new LongAdder();
+        int total = customers.size();
+
+        List<CustomerEOnlyCNameCNation> customerInstances = customers
+                .parallelStream()
+                .map(row ->
+                {
+                    counter.increment();
+                    long current = counter.sum();
+
+                    if (current % 10_000 == 0) {
+                        System.out.println("Processed " + current + " / " + total);
+                    }
+
+                    return new CustomerEOnlyCNameCNation(
+                            Integer.parseInt(row[0]),
+                            row[1],
+                            Integer.parseInt(row[3]),
+                            nation
+                    );
+                })
+                .toList();
+
+        return customerInstances;
+    }
+
+    public static List<RegionEOnlyName> createRegionEOnlyName(String filePath) {
+
+        List<String[]> regions = readDataFromCustomSeparator(filePath);
+
+        //RegionR[] regionInstances = new RegionR[regions.size()];
+        ArrayList<RegionEOnlyName> regionInstances = new ArrayList<>();
+
+        for (int i = 0; i < regions.size(); i++) { //for (String[] row : regions) {
+            String[] row = regions.get(i);
+            RegionEOnlyName region = new RegionEOnlyName(
+                    Integer.parseInt(row[0]),
+                    row[2]
+            );
+            //datastore.save(region);
+            //regionInstances[i] = region;
+            regionInstances.add(region);
+        }
+
+        return regionInstances;
+    }
+
+    public static List<NationEOnlyNNameNRegion> createNationEOnlyNNameNRegion(String filePath, RegionEOnlyName region) {
+
+        List<String[]> nations = readDataFromCustomSeparator(filePath);
+
+        ArrayList<NationEOnlyNNameNRegion> nationInstances = new ArrayList<>();
+
+        for (int i = 0; i < nations.size(); i++) { //for (String[] row : nations) {
+            String[] row = nations.get(i);
+            NationEOnlyNNameNRegion nation = new NationEOnlyNNameNRegion(
+                    Integer.parseInt(row[0]),
+                    row[1],
+                    Integer.parseInt(row[2]),
+                    region
+            );
+            //datastore.save(nation);
+            nationInstances.add(nation);
+        }
+
+
+        return nationInstances;
+    }
 
     public static void loadOrdersEWithLineitemsArrayAsTagsindexed(String filePathOrders, String filePathLineitems , Datastore datastore) {
         List<String[]> orders = readDataFromCustomSeparator(filePathOrders);

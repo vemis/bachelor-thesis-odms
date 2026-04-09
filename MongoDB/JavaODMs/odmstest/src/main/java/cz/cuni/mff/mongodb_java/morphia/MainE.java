@@ -29,17 +29,23 @@ public class MainE {
         System.out.println("Morphia initialized!");
 
 
-        var res = QueriesMorphiaE.R3(datastore);
+        var res = QueriesMorphiaE.R5(datastore);
         System.out.println(res.get(0));
         System.out.println(res.size());
-
-        var res2 = QueriesMorphiaE.R4(datastore);
-        System.out.println(res2.get(0));
-        System.out.println(res2.size());
 
 
 
         /*
+        TPCHDatasetLoaderMorphiaE.loadOrdersEWithCustomerWithNationWithRegion(
+                "..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl",
+                "..\\..\\..\\dataset\\TPC-H\\tpch-data\\customer.tbl",
+                "..\\..\\..\\dataset\\TPC-H\\tpch-data\\nation.tbl",
+                "..\\..\\..\\dataset\\TPC-H\\tpch-data\\region.tbl",
+                datastore
+        );
+
+
+
         TPCHDatasetLoaderMorphiaE.loadOrdersEWithLineitemsArrayAsTagsindexed(
                 "..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl",
                 "..\\..\\..\\dataset\\TPC-H\\tpch-data\\lineitem.tbl",

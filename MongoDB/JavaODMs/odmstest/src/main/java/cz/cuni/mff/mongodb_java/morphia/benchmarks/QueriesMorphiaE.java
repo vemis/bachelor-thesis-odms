@@ -1,6 +1,7 @@
 package cz.cuni.mff.mongodb_java.morphia.benchmarks;
 
 import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.CustomerEWithOrders;
+import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.OrdersEWithCustomerWithNationWithRegion;
 import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.OrdersEWithLineitems;
 import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.OrdersEWithLineitemsArrayAsTags;
 import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.OrdersEWithLineitemsArrayAsTagsIndexed;
@@ -157,6 +158,27 @@ public class QueriesMorphiaE {
                 .filter(Filters.eq("o_lineitems_tags_indexed", "MAIL"))
                 .iterator(new FindOptions()
                         .projection().include("o_orderdate", "o_lineitems_tags_indexed"))
+                .toList();
+
+        return results;
+    }
+
+    /**
+     * ### R5) Embedded Customer with Nation with Region — Filter by Region Name
+     *
+     * Test denormalization vs join simulation in documents.
+     * Find all orders from customers in "AMERICA".
+     * ```MongoDB
+     * db.ordersEWithCustomerWithNationWithRegion.find(
+     *   { "o_customer.c_nation.n_region.r_name": "AMERICA" }
+     * )
+     * ```
+     */
+    public static List<OrdersEWithCustomerWithNationWithRegion> R5(Datastore datastore) {
+        List<OrdersEWithCustomerWithNationWithRegion> results = datastore
+                .find(OrdersEWithCustomerWithNationWithRegion.class)
+                .filter(Filters.eq("o_customer.c_nation.n_region.r_name", "AMERICA"))
+                .iterator()
                 .toList();
 
         return results;
