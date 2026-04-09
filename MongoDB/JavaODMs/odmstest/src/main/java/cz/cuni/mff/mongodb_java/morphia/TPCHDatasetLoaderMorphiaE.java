@@ -14,6 +14,79 @@ import java.util.stream.Collectors;
 
 public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
 
+
+    public static void loadOrdersEOnlyOCommentIndexed(String filePathOrders, Datastore datastore) {
+        List<String[]> orders = readDataFromCustomSeparator(filePathOrders);
+
+
+        LongAdder counter = new LongAdder();
+        int total = orders.size();
+
+        List<OrdersEOnlyOCommentIndexed> orderInstances = orders
+                .parallelStream()
+                .map(row ->
+                {
+                    counter.increment();
+                    long current = counter.sum();
+
+                    if (current % 10_000 == 0) {
+                        System.out.println("Processed " + current + " / " + total);
+                    }
+
+                    return new OrdersEOnlyOCommentIndexed(
+                            Integer.parseInt(row[0]),
+                            LocalDate.parse(row[4]),
+                            row[8]
+                    );
+                })
+                .toList();
+
+        MongoCollection<OrdersEOnlyOCommentIndexed> collection =
+                datastore.getDatabase()
+                        .getCollection("ordersEOnlyOCommentIndexed", OrdersEOnlyOCommentIndexed.class);
+
+        System.out.println("Inserting many ordersEOnlyOCommentIndexed!");
+        collection.insertMany(orderInstances, new InsertManyOptions().ordered(false));
+
+        System.out.println("ordersEOnlyOComment insertedIndexed!");
+    }
+
+    public static void loadOrdersEOnlyOComment(String filePathOrders, Datastore datastore) {
+        List<String[]> orders = readDataFromCustomSeparator(filePathOrders);
+
+
+        LongAdder counter = new LongAdder();
+        int total = orders.size();
+
+        List<OrdersEOnlyOComment> orderInstances = orders
+                .parallelStream()
+                .map(row ->
+                {
+                    counter.increment();
+                    long current = counter.sum();
+
+                    if (current % 10_000 == 0) {
+                        System.out.println("Processed " + current + " / " + total);
+                    }
+
+                    return new OrdersEOnlyOComment(
+                            Integer.parseInt(row[0]),
+                            LocalDate.parse(row[4]),
+                            row[8]
+                    );
+                })
+                .toList();
+
+        MongoCollection<OrdersEOnlyOComment> collection =
+                datastore.getDatabase()
+                        .getCollection("ordersEOnlyOComment", OrdersEOnlyOComment.class);
+
+        System.out.println("Inserting many ordersEOnlyOComment!");
+        collection.insertMany(orderInstances, new InsertManyOptions().ordered(false));
+
+        System.out.println("ordersEOnlyOComment inserted!");
+    }
+
     public static void loadOrdersEWithCustomerWithNationWithRegion(
             String filePathOrders,
             String filePathCustomers,

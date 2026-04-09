@@ -1,6 +1,8 @@
 package cz.cuni.mff.mongodb_java.morphia.benchmarks;
 
 import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.CustomerEWithOrders;
+import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.OrdersEOnlyOComment;
+import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.OrdersEOnlyOCommentIndexed;
 import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.OrdersEWithCustomerWithNationWithRegion;
 import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.OrdersEWithLineitems;
 import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.OrdersEWithLineitemsArrayAsTags;
@@ -185,7 +187,43 @@ public class QueriesMorphiaE {
     }
 
     /**
-     * ### R7) Unwind Embedded Lineitems
+     * ### R6) Regex Text Search on Comment Field
+     *
+     * Simulate text search without an index.
+     * ```MongoDB
+     * db.ordersEOnlyOComment.find({ o_comment: /furiously/i })
+     * ```
+     */
+    public static List<OrdersEOnlyOComment> R6(Datastore datastore) {
+        List<OrdersEOnlyOComment> results = datastore
+                .find(OrdersEOnlyOComment.class)
+                .filter(Filters.regex("o_comment", "furiously").caseInsensitive())
+                .iterator()
+                .toList();
+
+        return results;
+    }
+
+    /**
+     * ### R7) Text Index Search on Comment Field
+     *
+     * Simulate text search with a text index.
+     * ```MongoDB
+     * db.ordersEOnlyOCommentIndexed.find({ $text: { $search: "furiously" } })
+     * ```
+     */
+    public static List<OrdersEOnlyOCommentIndexed> R7(Datastore datastore) {
+        List<OrdersEOnlyOCommentIndexed> results = datastore
+                .find(OrdersEOnlyOCommentIndexed.class)
+                .filter(Filters.text("furiously"))
+                .iterator()
+                .toList();
+
+        return results;
+    }
+
+    /**
+     * ### R8) Unwind Embedded Lineitems
      *
      * Test unwind of embedded objects (array flattening cost).
      * ```MongoDB
