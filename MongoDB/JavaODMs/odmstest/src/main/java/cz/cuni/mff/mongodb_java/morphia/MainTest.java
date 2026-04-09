@@ -1,10 +1,5 @@
 package cz.cuni.mff.mongodb_java.morphia;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 abstract class T {
     public T(int a) {
         System.out.println("T int");
@@ -36,6 +31,8 @@ public class MainTest {
 
     public static void main(String[] args) {
 
+
+        /*
         List<TT> originalList = new ArrayList<TT>();
         originalList.add(new TT(1));
         originalList.add(new TT(2));
@@ -46,7 +43,7 @@ public class MainTest {
                 .collect(Collectors.toList());
 
         filteredList.forEach(item -> System.out.println(item.a));
-
+*/
     }
 
 }

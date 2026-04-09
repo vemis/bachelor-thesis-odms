@@ -6,11 +6,76 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 
 import java.io.FileReader;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import java.io.File;
+import java.util.Map;
+import java.util.function.Function;
 
 public class TPCHDatasetLoader {
+
+    public static Object[] createLineitemsTags(String[] lineitemsRow){
+
+        return new Object[]{
+                Integer.parseInt(lineitemsRow[0]),
+                Integer.parseInt(lineitemsRow[1]),
+                Integer.parseInt(lineitemsRow[2]),
+                Integer.parseInt(lineitemsRow[3]),
+                Integer.parseInt(lineitemsRow[4]),
+                Double.parseDouble(lineitemsRow[5]),
+                Double.parseDouble(lineitemsRow[6]),
+                Double.parseDouble(lineitemsRow[7]),
+                lineitemsRow[8],
+                lineitemsRow[9],
+                LocalDate.parse(lineitemsRow[10]),
+                LocalDate.parse(lineitemsRow[11]),
+                LocalDate.parse(lineitemsRow[12]),
+                lineitemsRow[13],
+                lineitemsRow[14],
+                lineitemsRow[15]
+        };
+    }
+
+
+    //private static final long SHUFFLE_SEED = 42L;
+    //private static final Random RANDOM = new Random(SHUFFLE_SEED);
+
+    /**
+     * The Random() instance is created every time, because it can be used to generate the same
+     * output across every dataset
+     * @param tags
+     * @param SHUFFLE_SEED
+     * @return
+     */
+    public static Object[] shuffleArrayItemsAndLenght(Object[] tags, long SHUFFLE_SEED ) {
+        Random RANDOM = new Random(SHUFFLE_SEED);
+
+        List<Object> list = new ArrayList<>(Arrays.asList(tags));
+        Collections.shuffle(list, RANDOM);
+        int size = 1 + RANDOM.nextInt(list.size()); // 1 to 16
+        return list.subList(0, size).toArray();
+    }
+
+    public static Object[] getShuffledLineitemsTagsFromRow(String[] lineitemsRow, long SHUFFLE_SEED) {
+
+        Object[] shuffledArrayOfLenghtX = shuffleArrayItemsAndLenght(createLineitemsTags(lineitemsRow), SHUFFLE_SEED);//second row -> unique elements
+
+        return shuffledArrayOfLenghtX;
+    }
+
+    public static <T> Map<Integer, List<T>> groupListsByKey(List<T> items, Function<T, Integer> keyExtractor) {
+        Map<Integer, List<T>> map = new HashMap<>();
+        for (T item : items) {
+            map.computeIfAbsent(keyExtractor.apply(item), k -> new ArrayList<>()).add(item);
+        }
+        return map;
+    }
 
     //not used currently
     private String[] FILES = {

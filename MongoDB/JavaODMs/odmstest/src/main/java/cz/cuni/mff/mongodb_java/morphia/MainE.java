@@ -3,19 +3,9 @@ package cz.cuni.mff.mongodb_java.morphia;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import cz.cuni.mff.mongodb_java.morphia.benchmarks.QueriesMorphiaE;
-import cz.cuni.mff.mongodb_java.morphia.models.Address;
-import cz.cuni.mff.mongodb_java.morphia.models.Employee;
-import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.*;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
 import dev.morphia.mapping.MapperOptions;
-import org.bson.types.ObjectId;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 
 public class MainE {
@@ -38,12 +28,28 @@ public class MainE {
 
         System.out.println("Morphia initialized!");
 
-        var res = QueriesMorphiaE.R7(datastore);
+
+        var res = QueriesMorphiaE.R3(datastore);
         System.out.println(res.get(0));
         System.out.println(res.size());
 
+        var res2 = QueriesMorphiaE.R4(datastore);
+        System.out.println(res2.get(0));
+        System.out.println(res2.size());
+
+
 
         /*
+        TPCHDatasetLoaderMorphiaE.loadOrdersEWithLineitemsArrayAsTagsindexed(
+                "..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl",
+                "..\\..\\..\\dataset\\TPC-H\\tpch-data\\lineitem.tbl",
+                datastore);
+
+        TPCHDatasetLoaderMorphiaE.loadOrdersEWithLineitemsArrayAsTags(
+                "..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl",
+                "..\\..\\..\\dataset\\TPC-H\\tpch-data\\lineitem.tbl",
+                datastore);
+
         var lineitemsE = TPCHDatasetLoaderMorphiaE.createLineitemsE("..\\..\\..\\dataset\\TPC-H\\tpch-data\\lineitem.tbl", datastore);
         System.out.println(lineitemsE.size());
 

@@ -5,26 +5,100 @@ import com.mongodb.client.model.InsertManyOptions;
 import cz.cuni.mff.mongodb_java.TPCHDatasetLoader;
 
 import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.*;
-import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_relational.OrdersR;
 import dev.morphia.Datastore;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
+
+
+    public static void loadOrdersEWithLineitemsArrayAsTagsindexed(String filePathOrders, String filePathLineitems , Datastore datastore) {
+        List<String[]> orders = readDataFromCustomSeparator(filePathOrders);
+
+        List<String[]> lineitems = readDataFromCustomSeparator(filePathLineitems);
+
+        String[] linetemsRow2 = lineitems.get(1); // 2nd row - unique elements
+
+        LongAdder counter = new LongAdder();
+        int total = orders.size();
+
+        List<OrdersEWithLineitemsArrayAsTagsIndexed> orderInstances = orders
+                .parallelStream()
+                .map(row ->
+                {
+                    counter.increment();
+                    long current = counter.sum();
+
+                    if (current % 10_000 == 0) {
+                        System.out.println("Processed " + current + " / " + total);
+                    }
+
+                    return new OrdersEWithLineitemsArrayAsTagsIndexed(
+                            Integer.parseInt(row[0]),
+                            LocalDate.parse(row[4]),
+                            Arrays.asList( getShuffledLineitemsTagsFromRow(linetemsRow2, Integer.parseInt(row[0])) )
+                    );
+                })
+                .toList();
+
+        MongoCollection<OrdersEWithLineitemsArrayAsTagsIndexed> collection =
+                datastore.getDatabase()
+                        .getCollection("ordersEWithLineitemsArrayAsTagsIndexed", OrdersEWithLineitemsArrayAsTagsIndexed.class);
+
+        System.out.println("Inserting many ordersEWithLineitemsArrayAsTagsIndexed!");
+        collection.insertMany(orderInstances, new InsertManyOptions().ordered(false));
+
+        System.out.println("ordersEWithLineitemsArrayAsTagsIndexed inserted!");
+    }
+
+    public static void loadOrdersEWithLineitemsArrayAsTags(String filePathOrders, String filePathLineitems , Datastore datastore) {
+        List<String[]> orders = readDataFromCustomSeparator(filePathOrders);
+
+        List<String[]> lineitems = readDataFromCustomSeparator(filePathLineitems);
+
+        String[] linetemsRow2 = lineitems.get(1); // 2nd row - unique elements
+
+        LongAdder counter = new LongAdder();
+        int total = orders.size();
+
+        List<OrdersEWithLineitemsArrayAsTags> orderInstances = orders
+                .parallelStream()
+                .map(row ->
+                {
+                    counter.increment();
+                    long current = counter.sum();
+
+                    if (current % 10_000 == 0) {
+                        System.out.println("Processed " + current + " / " + total);
+                    }
+
+                    return new OrdersEWithLineitemsArrayAsTags(
+                            Integer.parseInt(row[0]),
+                            LocalDate.parse(row[4]),
+                            Arrays.asList( getShuffledLineitemsTagsFromRow(linetemsRow2, Integer.parseInt(row[0])) )
+                    );
+                })
+                .toList();
+
+        MongoCollection<OrdersEWithLineitemsArrayAsTags> collection =
+                datastore.getDatabase()
+                        .getCollection("ordersEWithLineitemsArrayAsTags", OrdersEWithLineitemsArrayAsTags.class);
+
+        System.out.println("Inserting many ordersEWithLineitemsArrayAsTagsInstances!");
+        collection.insertMany(orderInstances, new InsertManyOptions().ordered(false));
+
+        System.out.println("ordersEWithLineitemsArrayAsTags inserted!");
+    }
 
     public static void loadOrdersEWithLineitems(String filePath, List<LineitemE> lineitems ,Datastore datastore) {
 
         List<String[]> orders = readDataFromCustomSeparator(filePath);
 
         // LineitemE grouped by l_orderkey
-        Map<Integer, List<LineitemE>> lineitemsMappedBy_l_orderkey = groupByKey(lineitems, LineitemE::get_l_orderkey);
+        Map<Integer, List<LineitemE>> lineitemsMappedBy_l_orderkey = groupListsByKey(lineitems, LineitemE::get_l_orderkey);
 
         LongAdder counter = new LongAdder();
         int total = orders.size();
@@ -116,13 +190,7 @@ public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
         return lineitemInstances;
     }
 
-    public static <T> Map<Integer, List<T>> groupByKey(List<T> items, Function<T, Integer> keyExtractor) {
-        Map<Integer, List<T>> map = new HashMap<>();
-        for (T item : items) {
-            map.computeIfAbsent(keyExtractor.apply(item), k -> new ArrayList<>()).add(item);
-        }
-        return map;
-    }
+
 
     public static List<OrdersE> createOrders(String filePath, Datastore datastore) {
 

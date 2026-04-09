@@ -2,14 +2,13 @@ package cz.cuni.mff.mongodb_java.morphia.benchmarks;
 
 import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.CustomerEWithOrders;
 import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.OrdersEWithLineitems;
-import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_relational.CustomerR;
-import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_relational.OrdersR;
+import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.OrdersEWithLineitemsArrayAsTags;
+import cz.cuni.mff.mongodb_java.morphia.models.tpc_h_embedded.OrdersEWithLineitemsArrayAsTagsIndexed;
 import dev.morphia.Datastore;
 import dev.morphia.aggregation.expressions.Expressions;
-import dev.morphia.aggregation.stages.Lookup;
-import dev.morphia.aggregation.stages.Match;
 import dev.morphia.aggregation.stages.Projection;
 import dev.morphia.aggregation.stages.Unwind;
+import dev.morphia.query.FindOptions;
 import dev.morphia.query.filters.Filters;
 import org.bson.Document;
 
@@ -122,6 +121,48 @@ public class QueriesMorphiaE {
     }
 
     /**
+     * ### R3) Array Tags Query — Find Orders by Tag
+     *
+     * Test array indexing and filtering. Finds orders whose o_lineitems_tags array contains the value "MAIL".
+     * ```MongoDB
+     * db.ordersEWithLineitemsArrayAsTags.find(
+     *   { o_lineitems_tags: "MAIL" },
+     *   { o_orderdate: 1, o_lineitems_tags: 1 }
+     * )
+     * ```
+     */
+    public static List<OrdersEWithLineitemsArrayAsTags> R3(Datastore datastore) {
+        List<OrdersEWithLineitemsArrayAsTags> results = datastore.find(OrdersEWithLineitemsArrayAsTags.class)
+                .filter(Filters.eq("o_lineitems_tags", "MAIL"))
+                .iterator(new dev.morphia.query.FindOptions()
+                        .projection().include("o_orderdate", "o_lineitems_tags"))
+                .toList();
+
+        return results;
+    }
+
+    /**
+     * ### R4) Indexed Array Tags Query — Find Orders by Tag
+     *
+     * Test array indexing and filtering. Finds orders whose o_lineitems_tags array contains the value "MAIL".
+     * ```MongoDB
+     * db.ordersEWithLineitemsArrayAsTags.find(
+     *   { o_lineitems_tags: "MAIL" },
+     *   { o_orderdate: 1, o_lineitems_tags: 1 }
+     * )
+     * ```
+     */
+    public static List<OrdersEWithLineitemsArrayAsTagsIndexed> R4(Datastore datastore) {
+        List<OrdersEWithLineitemsArrayAsTagsIndexed> results = datastore.find(OrdersEWithLineitemsArrayAsTagsIndexed.class)
+                .filter(Filters.eq("o_lineitems_tags_indexed", "MAIL"))
+                .iterator(new FindOptions()
+                        .projection().include("o_orderdate", "o_lineitems_tags_indexed"))
+                .toList();
+
+        return results;
+    }
+
+    /**
      * ### R7) Unwind Embedded Lineitems
      *
      * Test unwind of embedded objects (array flattening cost).
@@ -132,7 +173,7 @@ public class QueriesMorphiaE {
      * ])
      * ```
      */
-    public static List<Document> R7(Datastore datastore) {
+    public static List<Document> R8(Datastore datastore) {
         List<Document> results = datastore.aggregate(OrdersEWithLineitems.class)
                 .unwind(Unwind.unwind("o_lineitems"))
                 .project(Projection.project()
