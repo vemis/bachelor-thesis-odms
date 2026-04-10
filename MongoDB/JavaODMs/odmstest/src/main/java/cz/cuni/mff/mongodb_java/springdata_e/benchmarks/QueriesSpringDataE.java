@@ -186,5 +186,29 @@ public class QueriesSpringDataE {
         return mongoTemplate.find(query, OrdersEOnlyOCommentIndexed.class);
     }
 
+    /**
+     * ### R8) Unwind Embedded Lineitems
+     *
+     * Test unwind of embedded objects (array flattening cost).
+     * ```MongoDB
+     * db.ordersEWithLineitems.aggregate([
+     *   { $unwind: "$o_lineitems" },
+     *   { $project: { _id: 1, "o_lineitems.l_partkey": 1 } }
+     * ])
+     * ```
+     */
+    public static List<Document> R8(MongoTemplate mongoTemplate) {
+        UnwindOperation unwind = unwind("o_lineitems");
+
+        ProjectionOperation project = project("o_lineitems.l_partkey");
+
+        Aggregation aggregation = newAggregation(unwind, project);
+
+        AggregationResults<Document> results =
+                mongoTemplate.aggregate(aggregation, OrdersEWithLineitems.class, Document.class);
+
+        return results.getMappedResults();
+    }
+
 
 }
