@@ -2,6 +2,7 @@ package cz.cuni.mff.mongodb_java.springdata_e.benchmarks;
 
 import cz.cuni.mff.mongodb_java.springdata_e.model.CustomerEWithOrders;
 import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitems;
+import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitemsArrayAsTags;
 import org.bson.Document;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -10,6 +11,7 @@ import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.aggregation.UnwindOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -70,6 +72,48 @@ public class QueriesSpringDataE {
                 mongoTemplate.aggregate(aggregation, OrdersEWithLineitems.class, Document.class);
 
         return results.getMappedResults();
+    }
+
+    /**
+     * ### R2) Embedded Orders with Lineitems Query — Indexed Field
+     *
+     * Test performance of fetching nested documents (1:N relationship embedded) on indexed field.
+     * ```MongoDB
+     * db.ordersEWithLineitems.aggregate([
+     *   { $match: { "o_lineitems.l_partkey": { $gt: 20000 } } },
+     *   { $project: { o_orderdate: 1, "o_lineitems.l_partkey": 1 } }
+     * ])
+     * ```
+     */
+    public static List<Document> R2(MongoTemplate mongoTemplate) {
+        MatchOperation match = match(Criteria.where("o_lineitems.l_partkey").gt(20000));
+
+        ProjectionOperation project = project("o_orderdate", "o_lineitems.l_partkey");
+
+        Aggregation aggregation = newAggregation(match, project);
+
+        AggregationResults<Document> results =
+                mongoTemplate.aggregate(aggregation, OrdersEWithLineitems.class, Document.class);
+
+        return results.getMappedResults();
+    }
+
+    /**
+     * ### R3) Array Tags Query — Find Orders by Tag
+     *
+     * Test array indexing and filtering. Finds orders whose o_lineitems_tags array contains the value "MAIL".
+     * ```MongoDB
+     * db.ordersEWithLineitemsArrayAsTags.find(
+     *   { o_lineitems_tags: "MAIL" },
+     *   { o_orderdate: 1, o_lineitems_tags: 1 }
+     * )
+     * ```
+     */
+    public static List<OrdersEWithLineitemsArrayAsTags> R3(MongoTemplate mongoTemplate) {
+        Query query = new Query(Criteria.where("o_lineitems_tags").is("MAIL"));
+        query.fields().include("o_orderdate").include("o_lineitems_tags");
+
+        return mongoTemplate.find(query, OrdersEWithLineitemsArrayAsTags.class);
     }
 
 

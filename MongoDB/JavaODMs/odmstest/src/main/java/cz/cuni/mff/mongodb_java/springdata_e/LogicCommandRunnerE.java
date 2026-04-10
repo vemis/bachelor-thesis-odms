@@ -18,11 +18,20 @@ public class LogicCommandRunnerE {
         return args -> {
 
 
-            var res = QueriesSpringDataE.R1(mongoTemplate);
+
+            System.out.println("Query started:");
+            var res = QueriesSpringDataE.R3(mongoTemplate);
             System.out.println(res.get(0));
             System.out.println(res.size());
 
-/*
+
+            /*
+            TPCHDatasetLoaderSpringDataE.loadOrdersEWithLineitemsArrayAsTags(
+                    "..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl",
+                    "..\\..\\..\\dataset\\TPC-H\\tpch-data\\lineitem.tbl",
+                    mongoTemplate
+            );
+
             var lineitemsE = TPCHDatasetLoaderSpringDataE.createLineitemsE("..\\..\\..\\dataset\\TPC-H\\tpch-data\\lineitem.tbl");
             System.out.println(lineitemsE.size());
 
