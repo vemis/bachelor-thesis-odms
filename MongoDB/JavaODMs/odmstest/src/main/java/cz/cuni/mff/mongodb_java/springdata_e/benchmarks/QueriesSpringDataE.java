@@ -1,6 +1,8 @@
 package cz.cuni.mff.mongodb_java.springdata_e.benchmarks;
 
 import cz.cuni.mff.mongodb_java.springdata_e.model.CustomerEWithOrders;
+import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEOnlyOComment;
+import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEOnlyOCommentIndexed;
 import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitems;
 import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitemsArrayAsTags;
 import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitemsArrayAsTagsIndexed;
@@ -14,6 +16,8 @@ import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.aggregation.UnwindOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.TextCriteria;
+import org.springframework.data.mongodb.core.query.TextQuery;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -151,6 +155,35 @@ public class QueriesSpringDataE {
         Query query = new Query(Criteria.where("o_customer.c_nation.n_region.r_name").is("AMERICA"));
 
         return mongoTemplate.find(query, OrdersEWithCustomerWithNationWithRegion.class);
+    }
+
+    /**
+     * ### R6) Regex Text Search on Comment Field
+     *
+     * Simulate text search without an index.
+     * ```MongoDB
+     * db.ordersEOnlyOComment.find({ o_comment: /furiously/i })
+     * ```
+     */
+    public static List<OrdersEOnlyOComment> R6(MongoTemplate mongoTemplate) {
+        Query query = new Query(Criteria.where("o_comment").regex("furiously", "i"));
+
+        return mongoTemplate.find(query, OrdersEOnlyOComment.class);
+    }
+
+    /**
+     * ### R7) Text Index Search on Comment Field
+     *
+     * Simulate text search with a text index.
+     * ```MongoDB
+     * db.ordersEOnlyOCommentIndexed.find({ $text: { $search: "furiously" } })
+     * ```
+     */
+    public static List<OrdersEOnlyOCommentIndexed> R7(MongoTemplate mongoTemplate) {
+        TextCriteria textCriteria = TextCriteria.forDefaultLanguage().matching("furiously");
+        Query query = TextQuery.queryText(textCriteria);
+
+        return mongoTemplate.find(query, OrdersEOnlyOCommentIndexed.class);
     }
 
 

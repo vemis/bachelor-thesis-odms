@@ -8,6 +8,8 @@ import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersE;
 import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitems;
 import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitemsArrayAsTags;
 import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitemsArrayAsTagsIndexed;
+import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEOnlyOComment;
+import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEOnlyOCommentIndexed;
 import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithCustomerWithNationWithRegion;
 import cz.cuni.mff.mongodb_java.springdata_e.model.CustomerEOnlyCNameCNation;
 import cz.cuni.mff.mongodb_java.springdata_e.model.NationEOnlyNNameNRegion;
@@ -361,6 +363,78 @@ public class TPCHDatasetLoaderSpringDataE extends TPCHDatasetLoader {
         }
 
         System.out.println("ordersEWithCustomerWithNationWithRegion inserted!");
+    }
+
+    public static void loadOrdersEOnlyOCommentIndexed(String filePathOrders, MongoTemplate mongoTemplate) {
+        List<String[]> orders = readDataFromCustomSeparator(filePathOrders);
+
+        LongAdder counter = new LongAdder();
+        int total = orders.size();
+
+        List<OrdersEOnlyOCommentIndexed> orderInstances = orders
+                .parallelStream()
+                .map(row -> {
+                    counter.increment();
+                    long current = counter.sum();
+
+                    if (current % 10_000 == 0) {
+                        System.out.println("Processed " + current + " / " + total);
+                    }
+
+                    return new OrdersEOnlyOCommentIndexed(
+                            Integer.parseInt(row[0]),
+                            LocalDate.parse(row[4]),
+                            row[8]
+                    );
+                })
+                .toList();
+
+        var batches = partition(orderInstances, 200_000);
+
+        System.out.println("Inserting many ordersEOnlyOCommentIndexed!");
+
+        for (var batch : batches) {
+            mongoTemplate.insert(batch, OrdersEOnlyOCommentIndexed.class);
+            System.out.println("Batch inserted!");
+        }
+
+        System.out.println("ordersEOnlyOCommentIndexed inserted!");
+    }
+
+    public static void loadOrdersEOnlyOComment(String filePathOrders, MongoTemplate mongoTemplate) {
+        List<String[]> orders = readDataFromCustomSeparator(filePathOrders);
+
+        LongAdder counter = new LongAdder();
+        int total = orders.size();
+
+        List<OrdersEOnlyOComment> orderInstances = orders
+                .parallelStream()
+                .map(row -> {
+                    counter.increment();
+                    long current = counter.sum();
+
+                    if (current % 10_000 == 0) {
+                        System.out.println("Processed " + current + " / " + total);
+                    }
+
+                    return new OrdersEOnlyOComment(
+                            Integer.parseInt(row[0]),
+                            LocalDate.parse(row[4]),
+                            row[8]
+                    );
+                })
+                .toList();
+
+        var batches = partition(orderInstances, 200_000);
+
+        System.out.println("Inserting many ordersEOnlyOComment!");
+
+        for (var batch : batches) {
+            mongoTemplate.insert(batch, OrdersEOnlyOComment.class);
+            System.out.println("Batch inserted!");
+        }
+
+        System.out.println("ordersEOnlyOComment inserted!");
     }
 
     public static List<OrdersE> loadOrders(String filePath) {
