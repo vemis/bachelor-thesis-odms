@@ -7,6 +7,7 @@ import cz.cuni.mff.mongodb_java.springdata_e.model.LineitemE;
 import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersE;
 import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitems;
 import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitemsArrayAsTags;
+import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitemsArrayAsTagsIndexed;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.time.LocalDate;
@@ -190,6 +191,47 @@ public class TPCHDatasetLoaderSpringDataE extends TPCHDatasetLoader {
         }
 
         System.out.println("ordersEWithLineitemsArrayAsTags inserted!");
+    }
+
+    public static void loadOrdersEWithLineitemsArrayAsTagsIndexed(String filePathOrders, String filePathLineitems, MongoTemplate mongoTemplate) {
+        List<String[]> orders = readDataFromCustomSeparator(filePathOrders);
+
+        List<String[]> lineitems = readDataFromCustomSeparator(filePathLineitems);
+
+        String[] linetemsRow2 = lineitems.get(1); // 2nd row - unique elements
+
+        LongAdder counter = new LongAdder();
+        int total = orders.size();
+
+        List<OrdersEWithLineitemsArrayAsTagsIndexed> orderInstances = orders
+                .parallelStream()
+                .map(row ->
+                {
+                    counter.increment();
+                    long current = counter.sum();
+
+                    if (current % 10_000 == 0) {
+                        System.out.println("Processed " + current + " / " + total);
+                    }
+
+                    return new OrdersEWithLineitemsArrayAsTagsIndexed(
+                            Integer.parseInt(row[0]),
+                            LocalDate.parse(row[4]),
+                            Arrays.asList(getShuffledLineitemsTagsFromRow(linetemsRow2, Integer.parseInt(row[0])))
+                    );
+                })
+                .toList();
+
+        var batches = partition(orderInstances, 200_000);
+
+        System.out.println("Inserting many ordersEWithLineitemsArrayAsTagsIndexed!");
+
+        for (var batch : batches) {
+            mongoTemplate.insert(batch, OrdersEWithLineitemsArrayAsTagsIndexed.class);
+            System.out.println("Batch inserted!");
+        }
+
+        System.out.println("ordersEWithLineitemsArrayAsTagsIndexed inserted!");
     }
 
     public static List<OrdersE> loadOrders(String filePath) {

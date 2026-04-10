@@ -3,6 +3,7 @@ package cz.cuni.mff.mongodb_java.springdata_e.benchmarks;
 import cz.cuni.mff.mongodb_java.springdata_e.model.CustomerEWithOrders;
 import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitems;
 import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitemsArrayAsTags;
+import cz.cuni.mff.mongodb_java.springdata_e.model.OrdersEWithLineitemsArrayAsTagsIndexed;
 import org.bson.Document;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -114,6 +115,24 @@ public class QueriesSpringDataE {
         query.fields().include("o_orderdate").include("o_lineitems_tags");
 
         return mongoTemplate.find(query, OrdersEWithLineitemsArrayAsTags.class);
+    }
+
+    /**
+     * ### R4) Indexed Array Tags Query — Find Orders by Tag
+     *
+     * Test array indexing and filtering on an indexed field. Finds orders whose o_lineitems_tags_indexed array contains the value "MAIL".
+     * ```MongoDB
+     * db.ordersEWithLineitemsArrayAsTagsIndexed.find(
+     *   { o_lineitems_tags_indexed: "MAIL" },
+     *   { o_orderdate: 1, o_lineitems_tags_indexed: 1 }
+     * )
+     * ```
+     */
+    public static List<OrdersEWithLineitemsArrayAsTagsIndexed> R4(MongoTemplate mongoTemplate) {
+        Query query = new Query(Criteria.where("o_lineitems_tags_indexed").is("MAIL"));
+        query.fields().include("o_orderdate").include("o_lineitems_tags_indexed");
+
+        return mongoTemplate.find(query, OrdersEWithLineitemsArrayAsTagsIndexed.class);
     }
 
 
