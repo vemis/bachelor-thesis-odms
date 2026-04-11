@@ -7,6 +7,7 @@ import OrdersESchema from "./models/tpc_h_e/orders-e.js";
 import CustomerEWithOrders from "./models/tpc_h_e/customer-e-with-orders.js";
 import OrdersEWithLineitems from "./models/tpc_h_e/orders-e-with-lineitems.js";
 import OrdersEWithLineitemsArrayAsTags from "./models/tpc_h_e/orders-e-with-lineitems-array-as-tags.js";
+import OrdersEWithLineitemsArrayAsTagsIndexed from "./models/tpc_h_e/orders-e-with-lineitems-array-as-tags-indexed.js";
 
 
 async function readDataFromCustomSeparator(filePath){
@@ -312,11 +313,40 @@ async function loadOrdersEWithLineitemsArrayAsTags(filePathOrders, filePathLinei
     }
 }
 
+async function loadOrdersEWithLineitemsArrayAsTagsIndexed(filePathOrders, filePathLineitems) {
+    try {
+        const ordersData = await readDataFromCustomSeparator(filePathOrders);
+        const lineitemsData = await readDataFromCustomSeparator(filePathLineitems);
+
+        const linetemsRow2 = lineitemsData[1]; // 2nd row - used as source of unique tag elements
+
+        const rowsOfSchemas = ordersData.map(row => ({
+            _id: Number(row[0]),
+            o_orderdate: new Date(row[4]),
+            o_lineitems_tags_indexed: getShuffledLineitemsTagsFromRow(linetemsRow2, Number(row[0]))
+        }));
+
+        const batches = partition(rowsOfSchemas, 200);
+
+        console.log("Inserting ordersEWithLineitemsArrayAsTagsIndexed batches");
+
+        for (let i = 0; i < batches.length; i++) {
+            await OrdersEWithLineitemsArrayAsTagsIndexed.insertMany(batches[i]);
+            console.log(`Batch ${i}/${batches.length} inserted!`);
+        }
+
+        console.log("ordersEWithLineitemsArrayAsTagsIndexed inserted!");
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 // exported API
 export {
     loadOrdersE,
     loadCustomersEWithOrders,
     loadLineitemsE,
     loadOrdersEWithLineitems,
-    loadOrdersEWithLineitemsArrayAsTags
+    loadOrdersEWithLineitemsArrayAsTags,
+    loadOrdersEWithLineitemsArrayAsTagsIndexed
 }
