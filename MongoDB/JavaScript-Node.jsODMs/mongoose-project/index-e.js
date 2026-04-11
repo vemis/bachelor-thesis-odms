@@ -24,7 +24,7 @@ async function run() {
     )*/
 
 
-    const res = await queriesE.R1()
+    const res = await queriesE.R2()
     console.log(res[0]);
     console.log(res.length)
 

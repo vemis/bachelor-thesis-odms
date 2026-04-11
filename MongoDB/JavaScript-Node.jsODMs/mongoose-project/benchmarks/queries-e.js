@@ -54,7 +54,32 @@ async function R1() {
     return r1;
 }
 
+/**
+ * ### R2) Embedded Orders with Lineitems Query — Indexed Field
+ *
+ * Test performance of fetching nested documents (1:N relationship embedded) on indexed field.
+ * ```MongoDB
+ * db.ordersEWithLineitems.aggregate([
+ *   { $match: { "o_lineitems.l_partkey": { $gt: 20000 } } },
+ *   { $project: { o_orderdate: 1, "o_lineitems.l_partkey": 1 } }
+ * ])
+ * ```
+ */
+async function R2() {
+    const r2 = OrdersEWithLineitems.aggregate([
+        { $match: { "o_lineitems.l_partkey": { $gt: 20000 } } },
+        {
+            $project: {
+                o_orderdate: 1,
+                "o_lineitems.l_partkey": 1
+            }
+        }
+    ]);
+    return r2;
+}
+
 export {
     C2,
-    R1
+    R1,
+    R2
 }
