@@ -169,6 +169,29 @@ async function R7() {
     return r7;
 }
 
+/**
+ * ### R8) Unwind Embedded Lineitems
+ *
+ * Test unwind of embedded objects (array flattening cost).
+ * ```MongoDB
+ * db.ordersEWithLineitems.aggregate([
+ *   { $unwind: "$o_lineitems" },
+ *   { $project: { _id: 1, "o_lineitems.l_partkey": 1 } }
+ * ])
+ * ```
+ */
+async function R8() {
+    const r8 = OrdersEWithLineitems.aggregate([
+        { $unwind: "$o_lineitems" },
+        {
+            $project: {
+                "o_lineitems.l_partkey": 1
+            }
+        }
+    ]);
+    return r8;
+}
+
 export {
     C2,
     R1,
@@ -177,5 +200,6 @@ export {
     R4,
     R5,
     R6,
-    R7
+    R7,
+    R8
 }
