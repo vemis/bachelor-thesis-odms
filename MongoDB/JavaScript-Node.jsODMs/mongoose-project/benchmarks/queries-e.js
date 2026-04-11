@@ -2,6 +2,7 @@ import CustomerEWithOrders from "./../models/tpc_h_e/customer-e-with-orders.js";
 import OrdersEWithLineitems from "./../models/tpc_h_e/orders-e-with-lineitems.js";
 import OrdersEWithLineitemsArrayAsTags from "./../models/tpc_h_e/orders-e-with-lineitems-array-as-tags.js";
 import OrdersEWithLineitemsArrayAsTagsIndexed from "./../models/tpc_h_e/orders-e-with-lineitems-array-as-tags-indexed.js";
+import OrdersEWithCustomerWithNationWithRegion from "./../models/tpc_h_e/orders-e-with-customer-with-nation-with-region.js";
 
 /**
  * ### C2) Indexed Columns
@@ -118,10 +119,29 @@ async function R4() {
     return r4;
 }
 
+/**
+ * ### R5) Embedded Customer with Nation with Region — Filter by Region Name
+ *
+ * Test denormalization vs join simulation in documents.
+ * Find all orders from customers in "AMERICA".
+ * ```MongoDB
+ * db.ordersEWithCustomerWithNationWithRegion.find(
+ *   { "o_customer.c_nation.n_region.r_name": "AMERICA" }
+ * )
+ * ```
+ */
+async function R5() {
+    const r5 = OrdersEWithCustomerWithNationWithRegion.find(
+        { "o_customer.c_nation.n_region.r_name": "AMERICA" }
+    );
+    return r5;
+}
+
 export {
     C2,
     R1,
     R2,
     R3,
-    R4
+    R4,
+    R5
 }

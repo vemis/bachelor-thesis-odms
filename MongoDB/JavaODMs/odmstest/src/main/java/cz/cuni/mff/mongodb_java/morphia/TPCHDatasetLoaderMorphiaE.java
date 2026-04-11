@@ -125,7 +125,8 @@ public class TPCHDatasetLoaderMorphiaE extends TPCHDatasetLoader {
         LongAdder counter = new LongAdder();
         int total = orders.size();
 
-        List<OrdersEWithCustomerWithNationWithRegion> orderInstances = orders
+        List<OrdersEWithCustomerWithN
+    ationWithRegion> orderInstances = orders
                 .parallelStream()
                 .map(row ->
                 {

@@ -8,6 +8,7 @@ import CustomerEWithOrders from "./models/tpc_h_e/customer-e-with-orders.js";
 import OrdersEWithLineitems from "./models/tpc_h_e/orders-e-with-lineitems.js";
 import OrdersEWithLineitemsArrayAsTags from "./models/tpc_h_e/orders-e-with-lineitems-array-as-tags.js";
 import OrdersEWithLineitemsArrayAsTagsIndexed from "./models/tpc_h_e/orders-e-with-lineitems-array-as-tags-indexed.js";
+import OrdersEWithCustomerWithNationWithRegion from "./models/tpc_h_e/orders-e-with-customer-with-nation-with-region.js";
 
 
 async function readDataFromCustomSeparator(filePath){
@@ -341,6 +342,73 @@ async function loadOrdersEWithLineitemsArrayAsTagsIndexed(filePathOrders, filePa
     }
 }
 
+async function loadOrdersEWithCustomerWithNationWithRegion(filePathOrders, filePathCustomers, filePathNations, filePathRegions) {
+    try {
+        const ordersData   = await readDataFromCustomSeparator(filePathOrders);
+        const regionRows   = await readDataFromCustomSeparator(filePathRegions);
+        const nationRows   = await readDataFromCustomSeparator(filePathNations);
+        const customerRows = await readDataFromCustomSeparator(filePathCustomers);
+
+        // Build region map keyed by r_regionkey
+        // region.tbl: r_regionkey|r_name|r_comment
+        const regionMap = new Map();
+        for (const row of regionRows) {
+            regionMap.set(Number(row[0]), {
+                r_regionkey: Number(row[0]),
+                r_name: row[1]
+            });
+        }
+
+        // Build nation map keyed by n_nationkey (with embedded region)
+        // nation.tbl: n_nationkey|n_name|n_regionkey|n_comment
+        const nationMap = new Map();
+        for (const row of nationRows) {
+            const n_nationkey = Number(row[0]);
+            const n_regionkey = Number(row[2]);
+            nationMap.set(n_nationkey, {
+                n_nationkey,
+                n_name: row[1],
+                n_regionkey,
+                n_region: regionMap.get(n_regionkey)
+            });
+        }
+
+        // Build customer map keyed by c_custkey (with embedded nation)
+        // customer.tbl: c_custkey|c_name|c_address|c_nationkey|c_phone|c_acctbal|c_mktsegment|c_comment
+        const customerMap = new Map();
+        for (const row of customerRows) {
+            const c_custkey  = Number(row[0]);
+            const c_nationkey = Number(row[3]);
+            customerMap.set(c_custkey, {
+                c_custkey,
+                c_name: row[1],
+                c_nationkey,
+                c_nation: nationMap.get(c_nationkey)
+            });
+        }
+
+        // orders.tbl: o_orderkey|o_custkey|o_orderstatus|o_totalprice|o_orderdate|...
+        const rowsOfSchemas = ordersData.map(row => ({
+            _id: Number(row[0]),
+            o_orderdate: new Date(row[4]),
+            o_customer: customerMap.get(Number(row[1]))
+        }));
+
+        const batches = partition(rowsOfSchemas, 200);
+
+        console.log("Inserting ordersEWithCustomerWithNationWithRegion batches");
+
+        for (let i = 0; i < batches.length; i++) {
+            await OrdersEWithCustomerWithNationWithRegion.insertMany(batches[i]);
+            console.log(`Batch ${i}/${batches.length} inserted!`);
+        }
+
+        console.log("ordersEWithCustomerWithNationWithRegion inserted!");
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 // exported API
 export {
     loadOrdersE,
@@ -348,5 +416,6 @@ export {
     loadLineitemsE,
     loadOrdersEWithLineitems,
     loadOrdersEWithLineitemsArrayAsTags,
-    loadOrdersEWithLineitemsArrayAsTagsIndexed
+    loadOrdersEWithLineitemsArrayAsTagsIndexed,
+    loadOrdersEWithCustomerWithNationWithRegion
 }
