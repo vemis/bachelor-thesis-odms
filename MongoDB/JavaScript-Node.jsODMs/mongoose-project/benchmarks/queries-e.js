@@ -3,6 +3,7 @@ import OrdersEWithLineitems from "./../models/tpc_h_e/orders-e-with-lineitems.js
 import OrdersEWithLineitemsArrayAsTags from "./../models/tpc_h_e/orders-e-with-lineitems-array-as-tags.js";
 import OrdersEWithLineitemsArrayAsTagsIndexed from "./../models/tpc_h_e/orders-e-with-lineitems-array-as-tags-indexed.js";
 import OrdersEWithCustomerWithNationWithRegion from "./../models/tpc_h_e/orders-e-with-customer-with-nation-with-region.js";
+import OrdersEOnlyOComment from "./../models/tpc_h_e/orders-e-only-o-comment.js";
 
 /**
  * ### C2) Indexed Columns
@@ -137,11 +138,27 @@ async function R5() {
     return r5;
 }
 
+/**
+ * ### R6) Regex Text Search on Comment Field
+ *
+ * Simulate text search without an index.
+ * ```MongoDB
+ * db.ordersEOnlyOComment.find({ o_comment: /furiously/i })
+ * ```
+ */
+async function R6() {
+    const r6 = OrdersEOnlyOComment.find(
+        { o_comment: /furiously/i }
+    );
+    return r6;
+}
+
 export {
     C2,
     R1,
     R2,
     R3,
     R4,
-    R5
+    R5,
+    R6
 }

@@ -24,13 +24,17 @@ async function run() {
     )*/
 
 
-    const res = await queriesE.R5()
+    const res = await queriesE.R6()
     console.log(res[0]);
     console.log(res.length)
 
 
 
     /*
+    await loadDataTPCHE.loadOrdersEOnlyOComment(
+        "..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl"
+    )
+
     await loadDataTPCHE.loadOrdersEWithCustomerWithNationWithRegion(
         "..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl",
         "..\\..\\..\\dataset\\TPC-H\\tpch-data\\customer.tbl",
