@@ -216,5 +216,36 @@ namespace MongoDBEntities.Benchmarks
 
             return result;
         }
+
+        /*
+        ### R9) Aggregation on Embedded Array — Sum Revenue per Order
+
+        Test aggregation on embedded arrays ($unwind + $group interaction).
+        ```MongoDB
+        db.ordersEWithLineitems.aggregate([
+          { $unwind: "$o_lineitems" },
+          {
+            $group: {
+              _id: "$_id",
+              totalRevenue: { $sum: "$o_lineitems.l_extendedprice" }
+            }
+          }
+        ])
+        ```
+        */
+        public static async Task<List<BsonDocument>> R9()
+        {
+            var result = await DB.Collection<OrdersEWithLineitems>()
+                .Aggregate()
+                .Unwind("o_lineitems")
+                .Group<BsonDocument>(new BsonDocument
+                {
+                    {"_id", "$_id"},
+                    {"totalRevenue", new BsonDocument("$sum", "$o_lineitems.l_extendedprice")}
+                })
+                .ToListAsync();
+
+            return result;
+        }
     }
 }
