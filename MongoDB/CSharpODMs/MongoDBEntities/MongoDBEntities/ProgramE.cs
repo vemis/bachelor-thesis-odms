@@ -11,16 +11,15 @@ namespace MongoDBEntities
 {
     public class ProgramE
     {
-        public static async Task Main_E(String[] args)
+        public static async Task Main(String[] args)
         {
+            /*
             BenchmarkRunner.Run<MongoDBEntitiesBenchmarksE>();
 
             Console.WriteLine("Benchmark finished");
 
             throw new Exception();
-
-
-
+            */
 
 
 
@@ -36,12 +35,25 @@ namespace MongoDBEntities
             Console.WriteLine("MongoDB.Entities initialized!");
 
 
-            var c2 = await QueriesEMongoDBEntities.C2();
-            Console.WriteLine(c2[0]);
-            Console.WriteLine(c2.Count);
+            var res = await QueriesEMongoDBEntities.R2();
+            Console.WriteLine(res[0]);
+            Console.WriteLine(res.Count);
 
 
             /*
+            await DB.Index<OrdersEWithLineitems>()
+                .Key(c => c.o_custkey, KeyType.Ascending)
+                .Key(c => c.o_lineitems[0].l_id, KeyType.Ascending)
+                .Key(c => c.o_lineitems[0].l_orderkey, KeyType.Ascending)
+                .Key(c => c.o_lineitems[0].l_partkey, KeyType.Ascending)
+                .Key(c => c.o_lineitems[0].l_suppkey, KeyType.Ascending)
+                .Key(c => c.o_lineitems[0].l_ps_id, KeyType.Ascending)
+                .CreateAsync();
+
+            List<LineitemE> lineitemsE = TPCHDatasetLoaderE.CreateLineitemsE("..\\..\\..\\..\\..\\..\\..\\dataset\\TPC-H\\tpch-data\\lineitem.tbl");
+            await TPCHDatasetLoaderE.LoadOrdersEWithLineitems("..\\..\\..\\..\\..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl", lineitemsE);
+
+            
             await DB.Index<CustomerEWithOrders>()
                 .Key(c => c.c_nationkey, KeyType.Ascending)
                 .Key(c => c.c_orders[0].o_custkey, KeyType.Ascending)
@@ -86,7 +98,7 @@ namespace MongoDBEntities
 
             await DB.InsertAsync( customer1 );
             */
-            
+
         }
     }
 }

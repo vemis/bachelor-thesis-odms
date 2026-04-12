@@ -42,6 +42,52 @@ namespace MongoDBEntities
             return entities;
         }
 
+        public static List<LineitemE> CreateLineitemsE(string filePath)
+        {
+            List<string[]> dataset = ReadDataFromCustomSeparator(filePath);
+
+            List<LineitemE> entities = new List<LineitemE>();
+
+            for (int i = 0; i < dataset.Count; i++)
+            {
+                if (i % 10_000 == 0)
+                {
+                    Console.WriteLine("Processed " + i + " / " + dataset.Count);
+                }
+
+                entities.Add(new LineitemE(dataset[i]));
+            }
+
+            return entities;
+        }
+
+        public static async Task LoadOrdersEWithLineitems(string filePathOrders, List<LineitemE> lineitems)
+        {
+            List<string[]> dataset = ReadDataFromCustomSeparator(filePathOrders);
+
+            Dictionary<int, List<LineitemE>> lineitemsByOrderKey = lineitems
+                .GroupBy(l => l.l_orderkey)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            List<OrdersEWithLineitems> entities = new List<OrdersEWithLineitems>();
+
+            for (int i = 0; i < dataset.Count; i++)
+            {
+                if (i % 10_000 == 0)
+                {
+                    Console.WriteLine("Processed " + i + " / " + dataset.Count);
+                }
+
+                int orderkey = Convert.ToInt32(dataset[i][0]);
+                entities.Add(new OrdersEWithLineitems(
+                    dataset[i],
+                    lineitemsByOrderKey.GetValueOrDefault(orderkey, null)
+                ));
+            }
+
+            await DB.InsertAsync(entities);
+        }
+
         public static async Task LoadDatasetCustomerEWithOrdersAsync(string filePath, List<OrdersE> orders)
         {
             List<string[]> dataset = ReadDataFromCustomSeparator(filePath);

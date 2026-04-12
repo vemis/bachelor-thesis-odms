@@ -37,5 +37,57 @@ namespace MongoDBEntities.Benchmarks
 
             return result;
         }
+
+        /*
+        ### R1) Embedded Orders with Lineitems Query
+
+        Test performance of fetching nested documents (1:N relationship embedded).
+        ```MongoDB
+        db.ordersEWithLineitems.aggregate([
+          { $match: { "o_lineitems.l_quantity": { $gt: 5 } } },
+          { $project: { o_orderdate: 1, "o_lineitems.l_partkey": 1 } }
+        ])
+        ```
+        */
+        public static async Task<List<BsonDocument>> R1()
+        {
+            var result = await DB.Collection<OrdersEWithLineitems>()
+                .Aggregate()
+                .Match(Builders<OrdersEWithLineitems>.Filter.Gt("o_lineitems.l_quantity", 5))
+                .Project<BsonDocument>(new BsonDocument
+                {
+                    {"o_orderdate", 1},
+                    {"o_lineitems.l_partkey", 1}
+                })
+                .ToListAsync();
+
+            return result;
+        }
+
+        /*
+        ### R2) Embedded Orders with Lineitems Query — Indexed Field
+
+        Test performance of fetching nested documents (1:N relationship embedded) on indexed field.
+        ```MongoDB
+        db.ordersEWithLineitems.aggregate([
+          { $match: { "o_lineitems.l_partkey": { $gt: 20000 } } },
+          { $project: { o_orderdate: 1, "o_lineitems.l_partkey": 1 } }
+        ])
+        ```
+        */
+        public static async Task<List<BsonDocument>> R2()
+        {
+            var result = await DB.Collection<OrdersEWithLineitems>()
+                .Aggregate()
+                .Match(Builders<OrdersEWithLineitems>.Filter.Gt("o_lineitems.l_partkey", 20000))
+                .Project<BsonDocument>(new BsonDocument
+                {
+                    {"o_orderdate", 1},
+                    {"o_lineitems.l_partkey", 1}
+                })
+                .ToListAsync();
+
+            return result;
+        }
     }
 }

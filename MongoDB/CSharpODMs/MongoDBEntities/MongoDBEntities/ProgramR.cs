@@ -31,7 +31,7 @@ namespace MongoDBEntities
     class ProgramR
     {
         // MainTesting Method
-        public static async Task Main(String[] args)
+        public static async Task Main_R(String[] args)
         {
 
             
