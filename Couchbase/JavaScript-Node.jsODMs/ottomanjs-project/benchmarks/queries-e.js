@@ -89,9 +89,31 @@ async function R3(){
     return r3.rows;
 }
 
+/**
+ * ### R4) Array Tags Query — Find Orders by Tag (Indexed)
+ *
+ * Test array filtering with a Couchbase array index. Same filter as R3 but on
+ * `OrdersEWithLineitemsArrayAsTagsIndexed` which has an array index on
+ * `o_lineitems_tags_indexed`.
+ * ```sql
+ * SELECT o.o_orderdate, o.o_lineitems_tags_indexed
+ * FROM ottoman_bucket_e.ottoman_scope_e.OrdersEWithLineitemsArrayAsTagsIndexed AS o
+ * WHERE ANY tag IN o.o_lineitems_tags_indexed SATISFIES tag = 'MAIL' END
+ * ```
+ */
+async function R4(){
+    const r4 = await ottoman.getDefaultInstance().query(
+        `SELECT o.o_orderdate, o.o_lineitems_tags_indexed
+         FROM ottoman_bucket_e.ottoman_scope_e.OrdersEWithLineitemsArrayAsTagsIndexed AS o
+         WHERE ANY tag IN o.o_lineitems_tags_indexed SATISFIES tag = 'MAIL' END`
+    )
+    return r4.rows;
+}
+
 export {
     C2,
     R1,
     R2,
-    R3
+    R3,
+    R4
 }

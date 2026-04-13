@@ -2,6 +2,7 @@ import {insertAll, partition, readDataFromCustomSeparator, getShuffledLineitemsT
 import {CustomerEWithOrders} from "./models/tpc_h_e/customer-e-with-orders.js";
 import {OrdersEWithLineitems} from "./models/tpc_h_e/orders-e-with-lineitems.js";
 import {OrdersEWithLineitemsArrayAsTags} from "./models/tpc_h_e/orders-e-with-lineitems-array-as-tags.js";
+import {OrdersEWithLineitemsArrayAsTagsIndexed} from "./models/tpc_h_e/orders-e-with-lineitems-array-as-tags-indexed.js";
 
 
 function mapOrdersByCustomer(ordersE){
@@ -269,10 +270,49 @@ async function loadOrdersEWithLineitemsArrayAsTags(ordersFilePath, lineitemsFile
     }
 }
 
+async function loadOrdersEWithLineitemsArrayAsTagsIndexed(ordersFilePath, lineitemsFilePath) {
+    try {
+        const ordersData = await readDataFromCustomSeparator(ordersFilePath);
+        const lineitemsData = await readDataFromCustomSeparator(lineitemsFilePath);
+
+        // 2nd row (index 1) is used as the source of unique tag values,
+        // matching the Java reference implementation
+        const lineitemsRow2 = lineitemsData[1];
+
+        console.log("Mapping rowsOfData to rowsOfSchemas")
+        const rowsOfSchemas = ordersData.map(([
+                                                  id,
+                                                  _o_custkey,
+                                                  _o_orderstatus,
+                                                  _o_totalprice,
+                                                  o_orderdate,
+                                              ]) => ({
+            id,
+            o_orderdate: new Date(o_orderdate),
+            o_lineitems_tags_indexed: getShuffledLineitemsTagsFromRow(createLineitemsTags(lineitemsRow2), parseInt(id))
+        }));
+
+        console.log("Inserting rowsOfSchemas")
+
+        const rowsOfSchemasBatches = partition(rowsOfSchemas, 5_000);
+
+        console.log("Batches created")
+
+        for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
+            await insertAll(rowsOfSchemasBatches[i], OrdersEWithLineitemsArrayAsTagsIndexed);
+            console.log(`Batch inserted! ${i + 1}/${rowsOfSchemasBatches.length}`)
+        }
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 export {
     loadOrders,
     loadCustomersEWithOrders,
     createLineitemsE,
     loadOrdersEWithLineitems,
-    loadOrdersEWithLineitemsArrayAsTags
+    loadOrdersEWithLineitemsArrayAsTags,
+    loadOrdersEWithLineitemsArrayAsTagsIndexed
 }
