@@ -82,6 +82,7 @@ public class TPCHDatasetLoader {
         throw new NotImplementedException();
     }
 
+    @SuppressWarnings("unchecked")
     protected static <T> void saveManyDocuments(List<T> documents, ReactiveCouchbaseTemplate reactiveCouchbaseTemplate){
         // not fast enough
         /*for (T document : documents) {
@@ -99,8 +100,8 @@ public class TPCHDatasetLoader {
                     if ((idx + 1) % 10_000 == 0) {
                         System.out.println("Inserted " + (idx + 1) + "/" + documents.size() +" documents so far");
                     }
-                    return reactiveCouchbaseTemplate.save(document);
-                }, 500) // concurrency of 500
+                    return reactiveCouchbaseTemplate.upsertById((Class<T>) document.getClass()).one(document);
+                }, 200) // concurrency of 500
                 .blockLast(); // wait until all are saved
 
         System.out.println("Flux saved!");
