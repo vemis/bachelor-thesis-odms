@@ -4,6 +4,7 @@ import {OrdersEWithLineitems} from "./models/tpc_h_e/orders-e-with-lineitems.js"
 import {OrdersEWithLineitemsArrayAsTags} from "./models/tpc_h_e/orders-e-with-lineitems-array-as-tags.js";
 import {OrdersEWithLineitemsArrayAsTagsIndexed} from "./models/tpc_h_e/orders-e-with-lineitems-array-as-tags-indexed.js";
 import {OrdersEWithCustomerWithNationWithRegion} from "./models/tpc_h_e/orders-e-with-customer-with-nation-with-region.js";
+import {OrdersEOnlyOComment} from "./models/tpc_h_e/orders-e-only-o-comment.js";
 
 
 function mapOrdersByCustomer(ordersE){
@@ -368,6 +369,43 @@ async function loadOrdersEWithCustomerWithNationWithRegion(ordersFilePath, custo
     }
 }
 
+async function loadOrdersEOnlyOComment(ordersFilePath) {
+    try {
+        const ordersData = await readDataFromCustomSeparator(ordersFilePath);
+
+        console.log("Mapping rowsOfData to rowsOfSchemas")
+        const rowsOfSchemas = ordersData.map(([
+                                                  id,
+                                                  _o_custkey,
+                                                  _o_orderstatus,
+                                                  _o_totalprice,
+                                                  o_orderdate,
+                                                  _o_orderpriority,
+                                                  _o_clerk,
+                                                  _o_shippriority,
+                                                  o_comment
+                                              ]) => ({
+            id,
+            o_orderdate: new Date(o_orderdate),
+            o_comment
+        }));
+
+        console.log("Inserting rowsOfSchemas")
+
+        const rowsOfSchemasBatches = partition(rowsOfSchemas, 5_000);
+
+        console.log("Batches created")
+
+        for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
+            await insertAll(rowsOfSchemasBatches[i], OrdersEOnlyOComment);
+            console.log(`Batch inserted! ${i + 1}/${rowsOfSchemasBatches.length}`)
+        }
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 export {
     loadOrders,
     loadCustomersEWithOrders,
@@ -375,5 +413,6 @@ export {
     loadOrdersEWithLineitems,
     loadOrdersEWithLineitemsArrayAsTags,
     loadOrdersEWithLineitemsArrayAsTagsIndexed,
-    loadOrdersEWithCustomerWithNationWithRegion
+    loadOrdersEWithCustomerWithNationWithRegion,
+    loadOrdersEOnlyOComment
 }

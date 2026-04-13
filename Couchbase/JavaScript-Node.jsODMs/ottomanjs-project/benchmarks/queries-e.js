@@ -130,11 +130,32 @@ async function R5(){
     return r5.rows;
 }
 
+/**
+ * ### R6) Regex Text Search on Comment Field
+ *
+ * Simulate text search without an index using REGEXP_CONTAINS.
+ * Couchbase N1QL equivalent of MongoDB's `{ o_comment: /furiously/i }` regex filter.
+ * ```sql
+ * SELECT *
+ * FROM ottoman_bucket_e.ottoman_scope_e.OrdersEOnlyOComment AS o
+ * WHERE REGEXP_CONTAINS(o.o_comment, '(?i)furiously')
+ * ```
+ */
+async function R6(){
+    const r6 = await ottoman.getDefaultInstance().query(
+        `SELECT *
+         FROM ottoman_bucket_e.ottoman_scope_e.OrdersEOnlyOComment AS o
+         WHERE REGEXP_CONTAINS(o.o_comment, '(?i)furiously')`
+    )
+    return r6.rows;
+}
+
 export {
     C2,
     R1,
     R2,
     R3,
     R4,
-    R5
+    R5,
+    R6
 }
