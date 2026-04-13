@@ -47,6 +47,7 @@ public class CouchbaseSpringDataLogicCommandRunnerE {
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_e", "OrdersEWithLineitems", bucket);
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_e", "OrdersEWithLineitemsArrayAsTags", bucket);
             SpringDataCouchbaseClusterManagement.createCollection("spring_scope_e", "OrdersEWithLineitemsArrayAsTagsIndexed", bucket);
+            SpringDataCouchbaseClusterManagement.createCollection("spring_scope_e", "OrdersEWithCustomerWithNationWithRegion", bucket);
 
 
 
@@ -61,15 +62,24 @@ public class CouchbaseSpringDataLogicCommandRunnerE {
             OrdersEWithLineitems.createIndexes(cluster);
             OrdersEWithLineitemsArrayAsTags.createIndexes(cluster);
             OrdersEWithLineitemsArrayAsTagsIndexed.createIndexes(cluster);
+            OrdersEWithCustomerWithNationWithRegion.createIndexes(cluster);
 
 
             System.out.println("Query:");
-            var res = QueriesSpringDataE.R4(cluster);
+            var res = QueriesSpringDataE.R5(cluster);
             System.out.println(res.get(0));
             System.out.println(res.size());
 
 
             /*
+            TPCHDatasetLoaderSpringDataE.loadOrdersEWithCustomerWithNationWithRegion(
+                    "../../../dataset/TPC-H/tpch-data/orders.tbl",
+                    "../../../dataset/TPC-H/tpch-data/customer.tbl",
+                    "../../../dataset/TPC-H/tpch-data/nation.tbl",
+                    "../../../dataset/TPC-H/tpch-data/region.tbl",
+                    reactiveCouchbaseTemplate
+            );
+
             TPCHDatasetLoaderSpringDataE.loadOrdersEWithLineitemsArrayAsTagsIndexed(
                     "../../../dataset/TPC-H/tpch-data/orders.tbl",
                     "../../../dataset/TPC-H/tpch-data/lineitem.tbl",

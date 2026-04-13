@@ -6,13 +6,18 @@ import cz.cuni.mff.couchbase_java.springdata_e.models.CustomerEWithOrders;
 import cz.cuni.mff.couchbase_java.springdata_e.models.LineitemE;
 import cz.cuni.mff.couchbase_java.springdata_e.models.OrdersE;
 import cz.cuni.mff.couchbase_java.springdata_e.models.OrdersEWithLineitems;
+import cz.cuni.mff.couchbase_java.springdata_e.models.CustomerEOnlyCNameCNation;
+import cz.cuni.mff.couchbase_java.springdata_e.models.NationEOnlyNNameNRegion;
+import cz.cuni.mff.couchbase_java.springdata_e.models.OrdersEWithCustomerWithNationWithRegion;
 import cz.cuni.mff.couchbase_java.springdata_e.models.OrdersEWithLineitemsArrayAsTags;
 import cz.cuni.mff.couchbase_java.springdata_e.models.OrdersEWithLineitemsArrayAsTagsIndexed;
+import cz.cuni.mff.couchbase_java.springdata_e.models.RegionEOnlyName;
 import org.springframework.data.couchbase.core.ReactiveCouchbaseTemplate;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
@@ -186,6 +191,74 @@ public class TPCHDatasetLoaderSpringDataE extends TPCHDatasetLoader {
         }
 
         System.out.println("ordersEWithLineitems inserted!");
+    }
+
+    public static void loadOrdersEWithCustomerWithNationWithRegion(
+            String filePathOrders,
+            String filePathCustomers,
+            String filePathNations,
+            String filePathRegions,
+            ReactiveCouchbaseTemplate reactiveCouchbaseTemplate) {
+
+        List<String[]> orders = readDataFromCustomSeparator(filePathOrders);
+
+        // Build RegionEOnlyName map keyed by r_regionkey
+        List<String[]> regionRows = readDataFromCustomSeparator(filePathRegions);
+        Map<Integer, RegionEOnlyName> regionMap = new HashMap<>();
+        for (String[] row : regionRows) {
+            int key = Integer.parseInt(row[0]);
+            regionMap.put(key, new RegionEOnlyName(key, row[1]));
+        }
+
+        // Build NationEOnlyNNameNRegion map keyed by n_nationkey
+        List<String[]> nationRows = readDataFromCustomSeparator(filePathNations);
+        Map<Integer, NationEOnlyNNameNRegion> nationMap = new HashMap<>();
+        for (String[] row : nationRows) {
+            int key = Integer.parseInt(row[0]);
+            int regionkey = Integer.parseInt(row[2]);
+            nationMap.put(key, new NationEOnlyNNameNRegion(key, row[1], regionkey, regionMap.get(regionkey)));
+        }
+
+        // Build CustomerEOnlyCNameCNation map keyed by c_custkey
+        List<String[]> customerRows = readDataFromCustomSeparator(filePathCustomers);
+        Map<Integer, CustomerEOnlyCNameCNation> customerMap = new HashMap<>();
+        for (String[] row : customerRows) {
+            int key = Integer.parseInt(row[0]);
+            int nationkey = Integer.parseInt(row[3]);
+            customerMap.put(key, new CustomerEOnlyCNameCNation(key, row[1], nationkey, nationMap.get(nationkey)));
+        }
+
+        LongAdder counter = new LongAdder();
+        int total = orders.size();
+
+        List<OrdersEWithCustomerWithNationWithRegion> orderInstances = orders
+                .parallelStream()
+                .map(row -> {
+                    counter.increment();
+                    long current = counter.sum();
+
+                    if (current % 10_000 == 0) {
+                        System.out.println("Processed " + current + " / " + total);
+                    }
+
+                    return new OrdersEWithCustomerWithNationWithRegion(
+                            Integer.parseInt(row[0]),
+                            LocalDate.parse(row[4]),
+                            customerMap.get(Integer.parseInt(row[1]))
+                    );
+                })
+                .toList();
+
+        var batches = partition(orderInstances, 10_000);
+
+        System.out.println("Inserting many ordersEWithCustomerWithNationWithRegion!");
+
+        for (int i = 0; i < batches.size(); i++) {
+            saveManyDocuments(batches.get(i), reactiveCouchbaseTemplate);
+            System.out.println("Batch inserted! " + (i + 1) + "/" + batches.size());
+        }
+
+        System.out.println("ordersEWithCustomerWithNationWithRegion inserted!");
     }
 
     public static void loadOrdersEWithLineitemsArrayAsTags(String filePathOrders, String filePathLineitems, ReactiveCouchbaseTemplate reactiveCouchbaseTemplate) {

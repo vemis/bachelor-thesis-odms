@@ -125,4 +125,26 @@ public class QueriesSpringDataE {
                 .query(query)
                 .rowsAsObject();
     }
+
+    /**
+     * ### R5) Embedded Customer with Nation with Region — Filter by Region Name
+     *
+     * Test denormalization depth. Find all orders from customers in "AMERICA".
+     * Uses the index idx_OrdersEWithCustomerWithNationWithRegion_r_name on o_customer.c_nation.n_region.r_name.
+     * ```sql
+     * SELECT *
+     * FROM spring_bucket_e.spring_scope_e.OrdersEWithCustomerWithNationWithRegion AS o
+     * WHERE o.o_customer.c_nation.n_region.r_name = 'AMERICA'
+     * ```
+     */
+    public static List<JsonObject> R5(Cluster cluster) {
+        String query =
+                "SELECT *" +
+                " FROM spring_bucket_e.spring_scope_e.OrdersEWithCustomerWithNationWithRegion AS o" +
+                " WHERE o.o_customer.c_nation.n_region.r_name = 'AMERICA'";
+
+        return cluster
+                .query(query)
+                .rowsAsObject();
+    }
 }
