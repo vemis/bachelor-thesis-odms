@@ -60,14 +60,15 @@ public class CouchbaseSpringDataLogicCommandRunnerE {
 
 
 
-            /*var res = QueriesSpringDataE.R1(cluster);
+            var res = QueriesSpringDataE.R2(cluster);
             System.out.println(res.get(0));
-            System.out.println(res.size());*/
+            System.out.println(res.size());
 
 
+            /*
             var lineitemsE = TPCHDatasetLoaderSpringDataE.createLineitemsE("../../../dataset/TPC-H/tpch-data/lineitem.tbl");
             TPCHDatasetLoaderSpringDataE.loadOrdersEWithLineitems("../../../dataset/TPC-H/tpch-data/orders.tbl", lineitemsE, reactiveCouchbaseTemplate);
-/*
+
             System.out.println("Creating ordersE");
             var orderse = TPCHDatasetLoaderSpringDataE.createOrders("../../../dataset/TPC-H/tpch-data/orders.tbl", reactiveCouchbaseTemplate);
             System.out.println("OrdersE created");

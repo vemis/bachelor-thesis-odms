@@ -57,4 +57,28 @@ public class QueriesSpringDataE {
                 .query(query)
                 .rowsAsObject();
     }
+
+    /**
+     * ### R2) Embedded Orders with Lineitems Query — Indexed Field
+     *
+     * Test performance of fetching nested documents (1:N relationship embedded) on indexed field.
+     * Uses the array index idx_OrdersEWithLineitems_l_partkey on o_lineitems[].l_partkey.
+     * ```sql
+     * SELECT o.o_orderdate,
+     *        ARRAY l.l_partkey FOR l IN o.o_lineitems END AS o_lineitems
+     * FROM spring_bucket_e.spring_scope_e.OrdersEWithLineitems AS o
+     * WHERE ANY l IN o.o_lineitems SATISFIES l.l_partkey > 20000 END
+     * ```
+     */
+    public static List<JsonObject> R2(Cluster cluster) {
+        String query =
+                "SELECT o.o_orderdate," +
+                " ARRAY l.l_partkey FOR l IN o.o_lineitems END AS o_lineitems" +
+                " FROM spring_bucket_e.spring_scope_e.OrdersEWithLineitems AS o" +
+                " WHERE ANY l IN o.o_lineitems SATISFIES l.l_partkey > 20000 END";
+
+        return cluster
+                .query(query)
+                .rowsAsObject();
+    }
 }
