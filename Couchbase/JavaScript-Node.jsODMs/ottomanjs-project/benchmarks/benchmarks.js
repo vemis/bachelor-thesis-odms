@@ -1,5 +1,4 @@
 import Benchmark from 'benchmark';
-import * as queriesR from "./queries-r.js"
 
 function benchmarkQuery(...funcs) {
     const suite = new Benchmark.Suite();

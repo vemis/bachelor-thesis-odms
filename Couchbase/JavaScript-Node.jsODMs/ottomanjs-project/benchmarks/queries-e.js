@@ -26,6 +26,28 @@ async function C2(){
     return c2.rows;
 }
 
+/**
+ * ### R1) Embedded Orders with Lineitems Query
+ *
+ * Test performance of fetching nested documents (1:N relationship embedded).
+ * ```sql
+ * SELECT o.o_orderdate,
+ *        ARRAY l.l_partkey FOR l IN o.o_lineitems END AS o_lineitems
+ * FROM ottoman_bucket_e.ottoman_scope_e.OrdersEWithLineitems AS o
+ * WHERE ANY l IN o.o_lineitems SATISFIES l.l_quantity > 5 END
+ * ```
+ */
+async function R1(){
+    const r1 = await ottoman.getDefaultInstance().query(
+        `SELECT o.o_orderdate,
+                ARRAY l.l_partkey FOR l IN o.o_lineitems END AS o_lineitems
+         FROM ottoman_bucket_e.ottoman_scope_e.OrdersEWithLineitems AS o
+         WHERE ANY l IN o.o_lineitems SATISFIES l.l_quantity > 5 END`
+    )
+    return r1.rows;
+}
+
 export {
-    C2
+    C2,
+    R1
 }

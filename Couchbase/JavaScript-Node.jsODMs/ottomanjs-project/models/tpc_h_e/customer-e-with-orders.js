@@ -34,7 +34,7 @@ CustomerEWithOrdersSchema.index.findBy_o_custkey = {
     type: 'n1ql',
 };*/
 
-export async function createEmbeddedIndexesCustomerEWithOrders() {
+async function createEmbeddedIndexesCustomerEWithOrders() {
     await ottoman.getDefaultInstance().query(
         `
             CREATE INDEX idx_customers_orders IF NOT EXISTS
@@ -54,3 +54,5 @@ export const CustomerEWithOrders = model("CustomerEWithOrders", CustomerEWithOrd
         keyGenerator: ({ metadata }) => "",
         keyGeneratorDelimiter: ""
     });
+
+CustomerEWithOrders.createIndexes = createEmbeddedIndexesCustomerEWithOrders;

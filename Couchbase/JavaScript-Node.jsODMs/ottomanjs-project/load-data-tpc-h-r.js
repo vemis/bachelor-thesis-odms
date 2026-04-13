@@ -80,7 +80,7 @@ async function loadCustomers(filePath){
 
         for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
             await insertAll(rowsOfSchemasBatches[i], CustomerR);
-            console.log("Batch inserted!")
+            console.log(`Batch inserted! ${i + 1}/${rowsOfSchemasBatches.length}`)
         }
 
     } catch (err) {
@@ -120,7 +120,7 @@ async function loadOrders(filePath){
 
         for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
             await insertAll(rowsOfSchemasBatches[i], OrdersR);
-            console.log("Batch inserted!")
+            console.log(`Batch inserted! ${i + 1}/${rowsOfSchemasBatches.length}`)
         }
 
     } catch (err) {
@@ -175,7 +175,7 @@ async function loadLineitems(filePath){
 
         for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
             await insertAll(rowsOfSchemasBatches[i], LineitemR);
-            console.log("Batch inserted!")
+            console.log(`Batch inserted! ${i + 1}/${rowsOfSchemasBatches.length}`)
         }
 
 
@@ -208,7 +208,7 @@ async function loadPartsupps(filePath){
 
         for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
             await insertAll(rowsOfSchemasBatches[i], PartsuppR);
-            console.log("Batch inserted!")
+            console.log(`Batch inserted! ${i + 1}/${rowsOfSchemasBatches.length}`)
         }
 
 
@@ -247,8 +247,8 @@ async function loadSuppliers(filePath){
         const rowsOfSchemasBatches = partition(rowsOfSchemas, 2_500);
 
         for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
-            await insertAll( rowsOfSchemasBatches[i], SupplierR );
-            console.log("Batch inserted!")
+            await insertAll(rowsOfSchemasBatches[i], SupplierR);
+            console.log(`Batch inserted! ${i + 1}/${rowsOfSchemasBatches.length}`)
         }
 
 
@@ -287,8 +287,8 @@ async function loadParts(filePath){
         const rowsOfSchemasBatches = partition(rowsOfSchemas, 2_500);
 
         for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
-            await insertAll( rowsOfSchemasBatches[i], PartR );
-            console.log("Batch inserted!")
+            await insertAll(rowsOfSchemasBatches[i], PartR);
+            console.log(`Batch inserted! ${i + 1}/${rowsOfSchemasBatches.length}`)
         }
 
 

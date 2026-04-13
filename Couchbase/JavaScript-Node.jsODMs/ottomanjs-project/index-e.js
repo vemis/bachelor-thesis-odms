@@ -3,45 +3,42 @@ import {} from './config/db-e.js';
 
 import ottoman from "ottoman";
 import OrdersESchema from "./models/tpc_h_e/orders-e.js";
-import {createEmbeddedIndexesCustomerEWithOrders, CustomerEWithOrders} from "./models/tpc_h_e/customer-e-with-orders.js";
+import {CustomerEWithOrders} from "./models/tpc_h_e/customer-e-with-orders.js";
+import {OrdersEWithLineitems} from "./models/tpc_h_e/orders-e-with-lineitems.js";
 import * as queriesE from "./benchmarks/queries-e.js";
 import * as loadDataE from "./load-data-tpc-h-e.js";
 import {benchmarkQuery} from "./benchmarks/benchmarks.js";
 
+
+
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// recreate __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 async function run(){
+    const basePath = path.join(__dirname, '..', '..', '..', 'dataset', 'TPC-H', 'tpch-data');
 
-    // create indexes of orders
 
-    /*await createEmbeddedIndexesCustomerEWithOrders();
-    const cuse1 = new CustomerEWithOrders({
-        id: "1",
-        c_name: "test",
-        c_address: "test",
+    // Create indexes
+    console.log("Creating indexes");
+    await CustomerEWithOrders.createIndexes();
+    await OrdersEWithLineitems.createIndexes();
+    console.log("Indexes created");
 
-        c_nationkey: "1",
-        c_phone: "test",
-        c_acctbal: 123,
-        c_mktsegment: "test",
-        c_commen: "test",
 
-        c_orders: [
-            {
-                o_orderkey: "1",
-                o_custkey: "1",
-                o_orderstatus: "test",
-                o_totalprice: 123,
-                o_orderdate: new Date("1993-01-01"),
-                o_orderpriority: "test",
-                o_clerk: "test",
-                o_shippriority: "test",
-                o_comment:"test"
-            }
-        ]
-    });
-
-    await cuse1.save();*/
+    console.log("Query:")
+    const res = await queriesE.R1();
+    console.log(res[0])
+    console.log(res.length)
 
     /*
+    const lineitemsE = await loadDataE.createLineitemsE(path.join(basePath, 'lineitem.tbl'))
+    await loadDataE.loadOrdersEWithLineitems(path.join(basePath, 'orders.tbl'), lineitemsE);
+
+
     // Create ordersE
     const ordersE =  await loadDataE.loadOrders("..\\..\\..\\dataset\\TPC-H\\tpch-data\\orders.tbl")
     // Load CustomersEWithOrders
@@ -49,12 +46,11 @@ async function run(){
         ordersE)
     */
 
-    //const c2 = await queriesE.C2();
-    //console.log(c2[0])
 
-    benchmarkQuery(
+
+    /*benchmarkQuery(
         queriesE.C2
-    )
+    )*/
 
     console.log("End")
 }
