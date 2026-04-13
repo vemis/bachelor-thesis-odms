@@ -15,6 +15,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import {OrdersEWithLineitemsArrayAsTags} from "./models/tpc_h_e/orders-e-with-lineitems-array-as-tags.js";
 import {OrdersEWithLineitemsArrayAsTagsIndexed} from "./models/tpc_h_e/orders-e-with-lineitems-array-as-tags-indexed.js";
+import {OrdersEWithCustomerWithNationWithRegion} from "./models/tpc_h_e/orders-e-with-customer-with-nation-with-region.js";
 
 // recreate __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -30,16 +31,24 @@ async function run(){
     await OrdersEWithLineitems.createIndexes();
     await OrdersEWithLineitemsArrayAsTags.createIndexes();
     await OrdersEWithLineitemsArrayAsTagsIndexed.createIndexes();
+    await OrdersEWithCustomerWithNationWithRegion.createIndexes();
     console.log("Indexes created");
 
 
     console.log("Query:")
-    const res = await queriesE.R3();
+    const res = await queriesE.R5();
     console.log(res[0])
     console.log(res.length)
 
 
     /*
+    await loadDataE.loadOrdersEWithCustomerWithNationWithRegion(
+        path.join(basePath, 'orders.tbl'),
+        path.join(basePath, 'customer.tbl'),
+        path.join(basePath, 'nation.tbl'),
+        path.join(basePath, 'region.tbl')
+    )
+
     await loadDataE.loadOrdersEWithLineitemsArrayAsTagsIndexed(
         path.join(basePath, 'orders.tbl'),
         path.join(basePath, 'lineitem.tbl')

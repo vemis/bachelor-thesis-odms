@@ -3,6 +3,7 @@ import {CustomerEWithOrders} from "./models/tpc_h_e/customer-e-with-orders.js";
 import {OrdersEWithLineitems} from "./models/tpc_h_e/orders-e-with-lineitems.js";
 import {OrdersEWithLineitemsArrayAsTags} from "./models/tpc_h_e/orders-e-with-lineitems-array-as-tags.js";
 import {OrdersEWithLineitemsArrayAsTagsIndexed} from "./models/tpc_h_e/orders-e-with-lineitems-array-as-tags-indexed.js";
+import {OrdersEWithCustomerWithNationWithRegion} from "./models/tpc_h_e/orders-e-with-customer-with-nation-with-region.js";
 
 
 function mapOrdersByCustomer(ordersE){
@@ -308,11 +309,71 @@ async function loadOrdersEWithLineitemsArrayAsTagsIndexed(ordersFilePath, lineit
     }
 }
 
+async function loadOrdersEWithCustomerWithNationWithRegion(ordersFilePath, customersFilePath, nationsFilePath, regionsFilePath) {
+    try {
+        const ordersData = await readDataFromCustomSeparator(ordersFilePath);
+
+        // Build region map keyed by r_regionkey
+        const regionsData = await readDataFromCustomSeparator(regionsFilePath);
+        const regionMap = new Map();
+        for (const row of regionsData) {
+            const key = parseInt(row[0]);
+            regionMap.set(key, { r_regionkey: key, r_name: row[1] });
+        }
+
+        // Build nation map keyed by n_nationkey
+        const nationsData = await readDataFromCustomSeparator(nationsFilePath);
+        const nationMap = new Map();
+        for (const row of nationsData) {
+            const key = parseInt(row[0]);
+            const regionkey = parseInt(row[2]);
+            nationMap.set(key, { n_nationkey: key, n_name: row[1], n_regionkey: regionkey, n_region: regionMap.get(regionkey) });
+        }
+
+        // Build customer map keyed by c_custkey
+        const customersData = await readDataFromCustomSeparator(customersFilePath);
+        const customerMap = new Map();
+        for (const row of customersData) {
+            const key = parseInt(row[0]);
+            const nationkey = parseInt(row[3]);
+            customerMap.set(key, { c_custkey: key, c_name: row[1], c_nationkey: nationkey, c_nation: nationMap.get(nationkey) });
+        }
+
+        console.log("Mapping rowsOfData to rowsOfSchemas")
+        const rowsOfSchemas = ordersData.map(([
+                                                  id,
+                                                  o_custkey,
+                                                  _o_orderstatus,
+                                                  _o_totalprice,
+                                                  o_orderdate,
+                                              ]) => ({
+            id,
+            o_orderdate: new Date(o_orderdate),
+            o_customer: customerMap.get(parseInt(o_custkey))
+        }));
+
+        console.log("Inserting rowsOfSchemas")
+
+        const rowsOfSchemasBatches = partition(rowsOfSchemas, 5_000);
+
+        console.log("Batches created")
+
+        for (let i = 0; i < rowsOfSchemasBatches.length; i++) {
+            await insertAll(rowsOfSchemasBatches[i], OrdersEWithCustomerWithNationWithRegion);
+            console.log(`Batch inserted! ${i + 1}/${rowsOfSchemasBatches.length}`)
+        }
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 export {
     loadOrders,
     loadCustomersEWithOrders,
     createLineitemsE,
     loadOrdersEWithLineitems,
     loadOrdersEWithLineitemsArrayAsTags,
-    loadOrdersEWithLineitemsArrayAsTagsIndexed
+    loadOrdersEWithLineitemsArrayAsTagsIndexed,
+    loadOrdersEWithCustomerWithNationWithRegion
 }

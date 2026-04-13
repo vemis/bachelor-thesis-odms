@@ -110,10 +110,31 @@ async function R4(){
     return r4.rows;
 }
 
+/**
+ * ### R5) Embedded Customer with Nation with Region — Filter by Region Name
+ *
+ * Test denormalization depth. Find all orders from customers in "AMERICA".
+ * Uses the nested path `o_customer.c_nation.n_region.r_name` with no dedicated index.
+ * ```sql
+ * SELECT *
+ * FROM ottoman_bucket_e.ottoman_scope_e.OrdersEWithCustomerWithNationWithRegion AS o
+ * WHERE o.o_customer.c_nation.n_region.r_name = 'AMERICA'
+ * ```
+ */
+async function R5(){
+    const r5 = await ottoman.getDefaultInstance().query(
+        `SELECT *
+         FROM ottoman_bucket_e.ottoman_scope_e.OrdersEWithCustomerWithNationWithRegion AS o
+         WHERE o.o_customer.c_nation.n_region.r_name = 'AMERICA'`
+    )
+    return r5.rows;
+}
+
 export {
     C2,
     R1,
     R2,
     R3,
-    R4
+    R4,
+    R5
 }
