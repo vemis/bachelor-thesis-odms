@@ -127,6 +127,28 @@ public class QueriesSpringDataE {
     }
 
     /**
+     * ### R8) Unwind Embedded Lineitems
+     *
+     * Test array flattening cost (equivalent of MongoDB $unwind).
+     * In Couchbase N1QL, UNNEST replaces $unwind — it produces one output row per array element.
+     * ```sql
+     * SELECT META(o).id AS o_orderkey, l.l_partkey
+     * FROM spring_bucket_e.spring_scope_e.OrdersEWithLineitems AS o
+     * UNNEST o.o_lineitems AS l
+     * ```
+     */
+    public static List<JsonObject> R8(Cluster cluster) {
+        String query =
+                "SELECT META(o).id AS o_orderkey, l.l_partkey" +
+                " FROM spring_bucket_e.spring_scope_e.OrdersEWithLineitems AS o" +
+                " UNNEST o.o_lineitems AS l";
+
+        return cluster
+                .query(query)
+                .rowsAsObject();
+    }
+
+    /**
      * ### R7) Text Index Search on Comment Field
      *
      * Simulate text search with an index on o_comment.
